@@ -46,7 +46,7 @@ def main(args):
         fake_img_ab = generator(img_l).detach()
         fake_img_lab = torch.cat([img_l, fake_img_ab], dim=1)
         
-        show_images(real_img_lab, fake_img_lab, pause_len=5)            
+        show_images(real_img_lab, fake_img_lab, pause_len=12)            
 
 
 if __name__ == '__main__':
