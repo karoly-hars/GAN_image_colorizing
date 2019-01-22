@@ -18,7 +18,7 @@ To run the training code:
 ```sh
 python3 train.py
 ```
-To download the trained generator weights, for inferencing on the CIFAR10 test set:
+To test the trained model on the CIFAR10 test set:
 ```sh
 python3 test.py
 ```
