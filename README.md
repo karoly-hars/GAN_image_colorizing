@@ -25,10 +25,10 @@ python3 test.py
 ### Qualitative evaluation
 (top to bottom: original RGB, grayscale input, prediction)
 #### Some good-looking samples:
-![Screenshot](imgs/img1.png =1174x256)
+![](imgs/img1.png =1174x256)
 
 #### Some Bad-looking ones:
-![Screenshot](imgs/img2.png =567x256)
+![](imgs/img2.png =567x256)
 
 
 ### Acknowledgements
