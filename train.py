@@ -168,7 +168,7 @@ def main(args):
             # save after every nth epoch
             if phase == "test" and epoch % args.save_freq == 0:
                 # display sample images
-                show_images(sample_real_img_lab, sample_fake_img_lab, epoch, args.save_path)            
+                show_images(sample_real_img_lab, sample_fake_img_lab, epoch=epoch, save_dir=args.save_path)            
                 torch.save(generator.state_dict(), osp.join(args.save_path, "checkpoint_ep{}_gen.pt".format(epoch)))
                 torch.save(discriminator.state_dict(), osp.join(args.save_path, "checkpoint_ep{}_disc.pt".format(epoch)))
                 print('Checkpoint.')                   
