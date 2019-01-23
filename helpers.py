@@ -27,7 +27,7 @@ def print_losses(epoch_gen_adv_loss, epoch_gen_l1_loss, epoch_disc_real_loss, ep
                   epoch_disc_fake_acc / data_loader_len))
 
 
-def show_images(real_img_lab, fake_img_lab, plot_size=14, scale=2.5, epoch=None, save_dir=None, pause=1000):
+def show_images(real_img_lab, fake_img_lab, plot_size=14, scale=2.5, epoch=None, save_dir=None, pause=2000):
     batch_size = real_img_lab.size()[0]
     plot_size = min(plot_size, batch_size)
 
