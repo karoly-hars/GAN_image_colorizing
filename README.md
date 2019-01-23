@@ -9,7 +9,7 @@ The project heavly builds on the findings of the paper [Image Colorization with 
 
 ### Prerequisites
  - numpy
- - torch 1.0.0
+ - torch (only tested with 1.0.0)
  - opencv-python
  - matplotlib
 
@@ -27,15 +27,14 @@ python3 test.py
 #### Some good-looking samples:
 ![Screenshot](imgs/img1.png)
 
-It is important to note that as a result of advarserial loss function, the goal of the generator is to fill the images with realistic/believable in order to fool the discriminator, rather than approximating the original colors of the image (altought, these can be equivalent sometimes). In this regard, the model performs quite well, often creating colorful and lifelike images.
+It is important to note that as a result of advarserial loss function, the goal of the generator is to fill the images with realistic/believable colors in order to fool the discriminator, rather than approximating the original colors of the image (altought, these can be equivalent sometimes). In this regard, the model performs quite well, often creating colorful and lifelike images.
 
 #### Some Bad-looking ones:
 ![Screenshot](imgs/img2.png)
 
-Evidently, the generator sometimes fails to identify a region or an object on an image, and it assigns unusual colors (at least to the our eyes) to these parts. It also has a tendency to sometimes create sepia-like or grayish images.
+Evidently, the generator sometimes fails to identify a region or an object on an image, and it assigns unusual colors (at least to the our eyes) to these parts. It also has a tendency to create sepia-like or grayish images.
 
 
 ### Acknowledgements
  1. [The aforementioned paper](https://arxiv.org/abs/1803.05400), and the corresponding [github repo](https://github.com/ImagingLab/Colorizing-with-GANs).
  2. The excellent [PyTorch-GAN repository](https://github.com/eriklindernoren/PyTorch-GAN).
-
