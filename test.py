@@ -34,7 +34,7 @@ def main(args):
     if use_gpu:
         generator.load_state_dict(torch.load(args.load_path))
     else:
-        generator.load_state_dict(torch.load(args.load_path, map_location='cpu'))
+        generator.load_state_dict(torch.load(args.load_path, map_location="cpu"))
     
     # run through the dataset and display the first few images of every batch
     for idx, sample in enumerate(data_loader):
@@ -49,7 +49,7 @@ def main(args):
         show_images(real_img_lab, fake_img_lab, pause_len=5)            
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(description = "Image colorization with GANs")
     parser.add_argument("--data_path", type=str, default="./data", help="Download and extraction path for the dataset")
     parser.add_argument("--load_path", type=str, default="ep200_weigths_gen.pt", help="path to the generator weights. If the file is not in place, the program will attempt download it")

@@ -69,7 +69,7 @@ def main(args):
     
     #  begin training    
     for epoch in range(args.start_epoch, args.max_epoch):
-        print('\n========== EPOCH {} =========='.format(epoch))
+        print("\n========== EPOCH {} ==========".format(epoch))
             
         for phase in ["train", "test"]:
             
@@ -167,14 +167,14 @@ def main(args):
             
             # save after every nth epoch
             if phase == "test" and epoch % args.save_freq == 0:
-                # display sample images
-                show_images(sample_real_img_lab, sample_fake_img_lab, epoch=epoch, save_dir=args.save_path)            
+                # display sample images          
                 torch.save(generator.state_dict(), osp.join(args.save_path, "checkpoint_ep{}_gen.pt".format(epoch)))
                 torch.save(discriminator.state_dict(), osp.join(args.save_path, "checkpoint_ep{}_disc.pt".format(epoch)))
-                print('Checkpoint.')                   
+                show_images(sample_real_img_lab, sample_fake_img_lab, epoch=epoch, save_dir=args.save_path)  
+                print("Checkpoint.")                   
                 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(description = "Image colorization with GANs")
     parser.add_argument("--data_path", type=str, default="./data", help="Download and extraction path for the dataset")
     parser.add_argument("--save_path", type=str, default="./checkpoints", help="Save and load path for the network weigths")
