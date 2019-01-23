@@ -20,7 +20,7 @@ def main(args):
     
     datasets = {}
     datasets["train"] = Cifar10Dataset(root_dir=data_dirs["train"], mirror=True)
-    datasets["test"] = Cifar10Dataset(root_dir=data_dirs["test"], mirror=False, random_seed=1) 
+    datasets["test"] = Cifar10Dataset(root_dir=data_dirs["test"], mirror=False, random_seed=0) 
     
     for phase in ["train", "test"]:
         print("{} dataset len: {}".format(phase, len(datasets[phase])))

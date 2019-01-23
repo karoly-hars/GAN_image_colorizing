@@ -1,5 +1,3 @@
-import os
-import os.path as osp
 import torch
 from torch.utils.data import DataLoader
 from datasets import get_cifar10_data, extract_cifar10_images, Cifar10Dataset
@@ -15,7 +13,7 @@ def main(args):
     get_cifar10_data(args.data_path)
     data_dirs = extract_cifar10_images(args.data_path)
     
-    dataset = Cifar10Dataset(root_dir=data_dirs["test"], mirror=False, random_seed=1) 
+    dataset = Cifar10Dataset(root_dir=data_dirs["test"], mirror=False, random_seed=0) 
     
     print("test dataset len: {}".format(len(dataset)))
     
@@ -46,7 +44,7 @@ def main(args):
         fake_img_ab = generator(img_l).detach()
         fake_img_lab = torch.cat([img_l, fake_img_ab], dim=1)
         
-        show_images(real_img_lab, fake_img_lab, pause_len=5)            
+        show_images(real_img_lab, fake_img_lab, pause=5000)            
 
 
 if __name__ == "__main__":
