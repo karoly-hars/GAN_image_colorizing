@@ -65,18 +65,32 @@ def extract_cifar10_images(data_path):
     return data_dirs
             
 
-def lab_preprocess(img_lab):
+def preprocess(img_bgr):
+    # to 32bit img
+    img_bgr = img_bgr.astype(np.float32)/255.0
+    # transform to lab
+    img_lab = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2LAB)
+    # normalize
     img_lab[:,:,0] = img_lab[:,:,0]/50 - 1
-    img_lab[:,:,1] = img_lab[:,:,1]/110
-    img_lab[:,:,2] = img_lab[:,:,2]/110
+    img_lab[:,:,1] = img_lab[:,:,1]/127
+    img_lab[:,:,2] = img_lab[:,:,2]/127
+    # transpose
+    img_lab = img_lab.transpose((2,0,1))
     return img_lab  
 
 
-def lab_postprocess(img_lab):
+def postprocess(img_lab):    
+    # transpose back
+    img_lab = img_lab.transpose((1,2,0))
+    # transform back
     img_lab[:,:,0] = (img_lab[:,:,0] + 1)*50
-    img_lab[:,:,1] = img_lab[:,:,1]*110
-    img_lab[:,:,2] = img_lab[:,:,2]*110
-    return img_lab  
+    img_lab[:,:,1] = img_lab[:,:,1]*127
+    img_lab[:,:,2] = img_lab[:,:,2]*127 
+    # transform to bgr
+    img_bgr = cv2.cvtColor(img_lab, cv2.COLOR_LAB2BGR)
+    # to int8
+    img_bgr = (img_bgr*255.0).astype(np.uint8)
+    return img_bgr
     
     
 class Cifar10Dataset(Dataset):
@@ -97,10 +111,6 @@ class Cifar10Dataset(Dataset):
         if self.mirror:
             if random.random() > 0.5:
                 img_bgr = img_bgr[:, ::-1, :]
-        
-        img_bgr = img_bgr.astype(np.float32)/255.0
-        img_lab = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2LAB)
-        img_lab = lab_preprocess(img_lab)
-        img_lab = img_lab.transpose((2,0,1)) 
-        
+          
+        img_lab = preprocess(img_bgr) 
         return img_lab

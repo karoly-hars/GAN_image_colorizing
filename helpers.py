@@ -1,5 +1,5 @@
 import torch
-from datasets import lab_postprocess
+from datasets import postprocess
 import cv2
 import numpy as np
 import os.path as osp
@@ -27,41 +27,34 @@ def print_losses(epoch_gen_adv_loss, epoch_gen_l1_loss, epoch_disc_real_loss, ep
                   epoch_disc_fake_acc / data_loader_len))
 
 
-def show_images(real_img_lab, fake_img_lab, plot_size=14, scale=2.5, epoch=None, save_dir=None, pause=2000):
-    batch_size = real_img_lab.size()[0]
+def save_sample(real_imgs_lab, fake_imgs_lab, save_path, plot_size=14, scale=2.5, show=False):
+    batch_size = real_imgs_lab.size()[0]
     plot_size = min(plot_size, batch_size)
 
     # create white canvas
-    canvas = np.ones((3*32 + 4*6, plot_size*32 + (plot_size+1)*6 , 3))*255                
+    canvas = np.ones((3*32 + 4*6, plot_size*32 + (plot_size+1)*6 , 3), dtype=np.uint8)*255
     
-    real_img_lab = real_img_lab.cpu().numpy()
-    fake_img_lab = fake_img_lab.cpu().numpy()
+    real_imgs_lab = real_imgs_lab.cpu().numpy()
+    fake_imgs_lab = fake_imgs_lab.cpu().numpy()
     
     for i in range(0, plot_size):
         # postprocess real and fake samples
-        real_lab = np.transpose(real_img_lab[i], (1,2,0))
-        real_lab = lab_postprocess(real_lab)
-        real_rgb = cv2.cvtColor(real_lab, cv2.COLOR_LAB2BGR)
-        
-        grayscale = np.expand_dims(cv2.cvtColor(real_rgb, cv2.COLOR_BGR2GRAY), 2)
-        
-        fake_lab = np.transpose(fake_img_lab[i], (1,2,0))
-        fake_lab = lab_postprocess(fake_lab)
-        fake_rgb = cv2.cvtColor(fake_lab, cv2.COLOR_LAB2BGR)
-        
+        real_bgr = postprocess(real_imgs_lab[i])
+        fake_bgr = postprocess(fake_imgs_lab[i])       
+        grayscale = np.expand_dims(cv2.cvtColor(real_bgr.astype(np.float32), cv2.COLOR_BGR2GRAY), 2)
         # paint
         x = (i+1)*6+i*32
-        canvas[6:38, x:x+32, :] = real_rgb
+        canvas[6:38, x:x+32, :] = real_bgr
         canvas[44:76, x:x+32, :] = np.repeat(grayscale, 3, axis=2)
-        canvas[82:114, x:x+32, :] = fake_rgb
+        canvas[82:114, x:x+32, :] = fake_bgr
 
     # scale 
     canvas = cv2.resize(canvas, None, fx=scale, fy=scale, interpolation=cv2.INTER_NEAREST)
-    # save if its needed
-    if save_dir is not None and epoch is not None:
-        cv2.imwrite(osp.join(save_dir,"checkpoint_ep{}_sample.png".format(epoch)), canvas*255)
-
-    # display sample
-    cv2.destroyAllWindows()
-    cv2.imshow("Display", canvas)
-    cv2.waitKey(pause)    
+    # save 
+    cv2.imwrite(osp.join(save_path), canvas)
+    
+    if show:
+        cv2.destroyAllWindows()
+        cv2.imshow("sample", canvas)
+        cv2.waitKey(100)
+        

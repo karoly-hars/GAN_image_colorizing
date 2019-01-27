@@ -2,10 +2,11 @@ import torch
 from torch.utils.data import DataLoader
 from datasets import get_cifar10_data, extract_cifar10_images, Cifar10Dataset
 from networks import Generator
-from helpers import show_images
+from helpers import save_sample
 import warnings
 warnings.simplefilter("ignore") # sorry. warnings annoye me
 import argparse
+import os.path as osp
 
 
 def main(args):    
@@ -13,7 +14,7 @@ def main(args):
     get_cifar10_data(args.data_path)
     data_dirs = extract_cifar10_images(args.data_path)
     
-    dataset = Cifar10Dataset(root_dir=data_dirs["test"], mirror=False, random_seed=0) 
+    dataset = Cifar10Dataset(root_dir=data_dirs["test"], mirror=False, random_seed=1) 
     
     print("test dataset len: {}".format(len(dataset)))
     
@@ -44,13 +45,15 @@ def main(args):
         fake_img_ab = generator(img_l).detach()
         fake_img_lab = torch.cat([img_l, fake_img_ab], dim=1)
         
-        show_images(real_img_lab, fake_img_lab, pause=5000)            
+        print("sample {}/{}".format(idx+1, len(data_loader)+1))
+        save_sample(real_img_lab, fake_img_lab, osp.join(args.save_path, "test_sample_{}.png".format(idx)), show=True)          
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description = "Image colorization with GANs")
     parser.add_argument("--data_path", type=str, default="./data", help="Download and extraction path for the dataset")
     parser.add_argument("--load_path", type=str, default="ep200_weigths_gen.pt", help="path to the generator weights. If the file is not in place, the program will attempt download it")
+    parser.add_argument("--save_path", type=str, default="./imgs", help="Save and load path for the network weigths")   
     parser.add_argument("--batch_size", type=int, default=128)
     parser.add_argument("--num_workers", type=int, default=4)
     args = parser.parse_args()
