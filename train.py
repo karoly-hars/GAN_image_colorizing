@@ -143,7 +143,7 @@ def main(args):
                     prediction_real = discriminator(real_img_lab)
                     prediction_fake = discriminator(fake_img_lab.detach())
     
-                    loss_real = discriminator_loss_fn(prediction_real, target_ones * args.lambda_)  
+                    loss_real = discriminator_loss_fn(prediction_real, target_ones * args.smoothing)  
                     loss_fake = discriminator_loss_fn(prediction_fake, target_zeros)
                     full_disc_loss = loss_real + loss_fake
     
