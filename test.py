@@ -2,7 +2,7 @@ import torch
 from torch.utils.data import DataLoader
 from datasets import get_cifar10_data, extract_cifar10_images, Cifar10Dataset
 from networks import Generator
-from helpers import save_sample
+from helpers import save_sample, print_args
 import warnings
 warnings.simplefilter("ignore") # sorry. warnings annoye me
 import argparse
@@ -10,6 +10,10 @@ import os.path as osp
 
 
 def main(args):    
+    # print args
+    print_args(args)
+    
+    
     # download and extract dataset
     get_cifar10_data(args.data_path)
     data_dirs = extract_cifar10_images(args.data_path)

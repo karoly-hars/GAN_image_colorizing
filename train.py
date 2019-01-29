@@ -7,13 +7,17 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from datasets import get_cifar10_data, extract_cifar10_images, Cifar10Dataset
 from networks import Generator, Discriminator, weights_init_normal, adjust_learning_rate
-from helpers import ones_target, zeros_target, save_sample, print_losses
+from helpers import ones_target, zeros_target, save_sample, print_losses, print_args
 import warnings
 warnings.simplefilter("ignore") # sorry. warnings annoye me
 import argparse
 
 
 def main(args):
+    
+    # print args
+    print_args(args)
+    
     # download and extract dataset
     get_cifar10_data(args.data_path)
     data_dirs = extract_cifar10_images(args.data_path)

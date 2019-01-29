@@ -58,3 +58,9 @@ def save_sample(real_imgs_lab, fake_imgs_lab, save_path, plot_size=14, scale=2.5
         cv2.imshow("sample", canvas)
         cv2.waitKey(100)
         
+        
+def print_args(args):
+    arg_list = str(args)[10:-1].split(",")
+    for arg in arg_list:
+        print(arg.strip())
+    print("")
