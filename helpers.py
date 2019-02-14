@@ -15,10 +15,11 @@ def zeros_target(size):
 
   
 def print_losses(epoch_gen_adv_loss, epoch_gen_l1_loss, epoch_disc_real_loss, epoch_disc_fake_loss,
-                 epoch_disc_real_acc, epoch_disc_fake_acc, data_loader_len): 
+                 epoch_disc_real_acc, epoch_disc_fake_acc, data_loader_len, l1_weight): 
   
-    print("  Generator: adversarial loss = {:.4f}, L1 loss = {:.4f})"
-         .format(epoch_gen_adv_loss / data_loader_len, epoch_gen_l1_loss / data_loader_len))   
+    print("  Generator: adversarial loss = {:.4f}, L1 loss = {:.4f}, full loss = {:.4f}"
+         .format(epoch_gen_adv_loss / data_loader_len, epoch_gen_l1_loss / data_loader_len,
+                 (epoch_gen_adv_loss / data_loader_len) + (epoch_gen_l1_loss / data_loader_len)*l1_weight))   
     print("  Discriminator: loss = {:.4f}"
           .format((epoch_disc_real_loss + epoch_disc_fake_loss) / (data_loader_len*2)))
     print("                 acc. = {:.4f} (real acc. = {:.4f}, fake acc. = {:.4f})"
@@ -27,7 +28,7 @@ def print_losses(epoch_gen_adv_loss, epoch_gen_l1_loss, epoch_disc_real_loss, ep
                   epoch_disc_fake_acc / data_loader_len))
 
 
-def save_sample(real_imgs_lab, fake_imgs_lab, save_path, plot_size=14, scale=2.5, show=False):
+def save_sample(real_imgs_lab, fake_imgs_lab, save_path, plot_size=20, scale=2.2, show=False):
     batch_size = real_imgs_lab.size()[0]
     plot_size = min(plot_size, batch_size)
 
@@ -57,8 +58,7 @@ def save_sample(real_imgs_lab, fake_imgs_lab, save_path, plot_size=14, scale=2.5
         cv2.destroyAllWindows()
         cv2.imshow("sample", canvas)
         cv2.waitKey(10000)
-        
-        
+
 def print_args(args):
     arg_list = str(args)[10:-1].split(",")
     for arg in arg_list:

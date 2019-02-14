@@ -3,13 +3,21 @@ import torch
 import torch.nn as nn
 
 
+def weights_init_normal(m):
+    classname = m.__class__.__name__
+    if classname.find('Conv2d') != -1 or classname.find('ConvTranspose2d') != -1:
+        torch.nn.init.normal_(m.weight.data, 0.0, 0.02)
+    elif classname.find('BatchNorm2d') != -1:
+        torch.nn.init.normal_(m.weight.data, 1.0, 0.02)
+        torch.nn.init.constant_(m.bias.data, 0.0)
+
+
 class ConvBlock(nn.Module):
     def __init__(self, in_size, out_size, normalize=True, kernel_size=4, stride=2, padding=1, bias=True, dropout=0, activation_fn=nn.LeakyReLU(0.2)):
         super(ConvBlock, self).__init__()
         model = [nn.Conv2d(in_size, out_size, kernel_size=kernel_size, stride=stride, padding=padding, bias=bias)]
         if normalize:
-            model.append(nn.BatchNorm2d(out_size, 0.8, affine=False, track_running_stats=False))
-            #model.append(nn.InstanceNorm2d(out_size, affine=False, track_running_stats=False))
+            model.append(nn.BatchNorm2d(out_size))
         model.append(activation_fn)
         if dropout>0:
             model.append(nn.Dropout(dropout))
@@ -26,8 +34,7 @@ class TransConvBlock(nn.Module):
         
         model = [nn.ConvTranspose2d(in_size, out_size, kernel_size=kernel_size, stride=stride, padding=padding, bias=bias)]
         if normalize:
-            model.append(nn.BatchNorm2d(out_size, 0.8, affine=False, track_running_stats=False))
-            #model.append(nn.InstanceNorm2d(out_size, affine=False, track_running_stats=False))
+            model.append(nn.BatchNorm2d(out_size))
         model.append(activation_fn)
         if dropout>0:
             model.append(nn.Dropout(dropout))        
@@ -103,17 +110,8 @@ class Discriminator(nn.Module):
         return x
 
 
-def weights_init_normal(m):
-    classname = m.__class__.__name__
-    if classname.find('Conv2d') != -1 or classname.find('ConvTranspose2d') != -1:
-        torch.nn.init.normal_(m.weight.data, 0.0, 0.02)
-        torch.nn.init.constant_(m.bias.data, 0.0)
-    elif classname.find('Norm2d') != -1 and m.affine:
-        torch.nn.init.normal_(m.weight.data, 1.0, 0.02)
-        torch.nn.init.constant_(m.bias.data, 0.0)
 
-
-def adjust_learning_rate(optimizer, base_lr, global_step, lr_decay_rate=0.1, lr_decay_steps=1e4):
+def adjust_learning_rate(optimizer, base_lr, global_step, lr_decay_rate=0.1, lr_decay_steps=5e4):
     lr = base_lr * (lr_decay_rate ** (global_step/lr_decay_steps))
     if lr < 1e-6:
         lr = 1e-6

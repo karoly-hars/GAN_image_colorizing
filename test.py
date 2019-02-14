@@ -6,13 +6,13 @@ from helpers import save_sample, print_args
 import warnings
 warnings.simplefilter("ignore") # sorry. warnings annoye me
 import argparse
+import os
 import os.path as osp
 
 
 def main(args):    
     # print args
-    print_args(args)
-    
+    print_args(args)    
     
     # download and extract dataset
     get_cifar10_data(args.data_path)
@@ -39,6 +39,10 @@ def main(args):
     else:
         generator.load_state_dict(torch.load(args.load_path, map_location="cpu"))
     
+    # make save dir, if needed
+    if not os.path.exists(args.save_path):
+        os.makedirs(args.save_path)
+    
     # run through the dataset and display the first few images of every batch
     for idx, sample in enumerate(data_loader):
         
@@ -56,9 +60,9 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description = "Image colorization with GANs")
     parser.add_argument("--data_path", type=str, default="./data", help="Download and extraction path for the dataset")
-    parser.add_argument("--load_path", type=str, default="ep200_weigths_gen.pt", help="path to the generator weights. If the file is not in place, the program will attempt download it")
-    parser.add_argument("--save_path", type=str, default="./imgs", help="Save and load path for the network weigths")   
-    parser.add_argument("--batch_size", type=int, default=128)
+    parser.add_argument("--load_path", type=str, default="ep200_weigths_gen.pt", help="path to the generator weights.")
+    parser.add_argument("--save_path", type=str, default="./output_imgs", help="Save path for the test imgs")   
+    parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument("--num_workers", type=int, default=4)
     args = parser.parse_args()
     

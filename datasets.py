@@ -5,7 +5,6 @@ import numpy as np
 from torch.utils.data import Dataset
 import random
 
-
 def get_cifar10_data(data_path):
     if not osp.exists(data_path):
         # download
