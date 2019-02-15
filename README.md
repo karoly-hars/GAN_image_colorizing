@@ -31,7 +31,7 @@ python3 test.py
 It is important to note that as a result of adversarial loss function, the goal of the generator is to fill the images with realistic/believable colors in order to fool the discriminator, rather than approximating the original colors of the image (although, these can be equivalent). In this regard, the model performs quite well, often creating colorful and lifelike images.
 
 #### Some bad-looking ones:
-<img src="imgs/img1.png" width="700">
+<img src="imgs/img2.png" width="700">
 
 Evidently, the generator sometimes fails to identify a region or an object on an image, and it assigns unusual colors (at least to our eyes) to these parts. It also has a tendency to create sepia-like or grayish images.
 
