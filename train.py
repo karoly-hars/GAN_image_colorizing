@@ -66,8 +66,12 @@ def main(args):
     # load weight if the training is not starting from the beginning
     if args.start_epoch > 0:
         global_step = args.start_epoch * len(data_loaders["train"])
-        generator.load_state_dict(torch.load(osp.join(args.save_path, "checkpoint_ep{}_gen.pt".format(args.start_epoch-1))))
-        discriminator.load_state_dict(torch.load(osp.join(args.save_path, "checkpoint_ep{}_disc.pt".format(args.start_epoch-1))))
+        if use_gpu:
+            generator.load_state_dict(torch.load(osp.join(args.save_path, "checkpoint_ep{}_gen.pt".format(args.start_epoch-1))))
+            discriminator.load_state_dict(torch.load(osp.join(args.save_path, "checkpoint_ep{}_disc.pt".format(args.start_epoch-1))))
+        else:
+            generator.load_state_dict(torch.load(osp.join(args.save_path, "checkpoint_ep{}_gen.pt".format(args.start_epoch-1)), map_location="cpu"))
+            discriminator.load_state_dict(torch.load(osp.join(args.save_path, "checkpoint_ep{}_disc.pt".format(args.start_epoch-1)), map_location="cpu"))
     
     #  begin training    
     for epoch in range(args.start_epoch, args.max_epoch):
@@ -125,7 +129,7 @@ def main(args):
                     # l1 loss
                     l1_loss = l1_loss_fn(real_img_lab[:,1:,:,:], fake_img_ab)
                     # full gen loss
-                    full_gen_loss = adv_loss + (args.lambda_ * l1_loss)
+                    full_gen_loss = adv_loss + (args.l1_weight * l1_loss)
     
                     if phase == "train":
                         full_gen_loss.backward()
@@ -165,7 +169,7 @@ def main(args):
             print_losses(epoch_gen_adv_loss, epoch_gen_l1_loss,
                          epoch_disc_real_loss, epoch_disc_fake_loss,
                          epoch_disc_real_acc, epoch_disc_fake_acc, 
-                         len(data_loaders[phase]))  
+                         len(data_loaders[phase]), args.l1_weight)  
     
             # save after every nth epoch
             if phase == "test":
@@ -191,7 +195,7 @@ if __name__ == "__main__":
     parser.add_argument("--learning_rate_g", type=float, default=3e-4, help="Base learning rate for the generator")
     parser.add_argument("--learning_rate_d", type=float, default=6e-5, help="Base learning rate for the discriminator")
     parser.add_argument("--smoothing", type=float, default=0.9)
-    parser.add_argument("--lambda_", type=int, default=100)
+    parser.add_argument("--l1_weight", type=int, default=100)
     args = parser.parse_args()
     
     main(args)

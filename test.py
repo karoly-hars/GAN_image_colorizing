@@ -29,6 +29,10 @@ def main(args):
     use_gpu = torch.cuda.is_available()
     print("use_gpu={}".format(use_gpu))
     
+    # download the weights for the generator, if they are not present
+    if not os.path.exists(args.load_path) and args.load_path=="ep200_weigths_gen.pt":
+        print('Downloading model weights...')
+        os.system("wget https://www.dropbox.com/s/k3mcfdob00wuxh3/ep200_weigths_gen.pt")
     generator = Generator()
     if use_gpu:
         generator.cuda()

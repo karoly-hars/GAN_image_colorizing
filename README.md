@@ -10,7 +10,6 @@ The project heavily builds on the findings of the paper [Image Colorization with
  - numpy
  - torch (only tested with 1.0.0)
  - opencv-python
- - matplotlib
 
 ### Running the code
 To run the training code:
@@ -24,7 +23,7 @@ To go through to CIFAR10 test set, and display/save some re-colorized images:
 python3 test.py
 ```
 ### Qualitative evaluation
-(top to bottom: original RGB, grayscale input, prediction)
+(top to bottom: original RGB, grayscale input, generated)
 #### Some good-looking samples:
 ![Screenshot](imgs/img1.png)
 
