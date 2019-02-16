@@ -27,7 +27,7 @@ python3 test.py
 #### Some good-looking samples:
 <img src="imgs/img1.png" width="700">
 
-It is important to note that as a result of adversarial loss function, the goal of the generator is to fill the images with realistic/believable colors in order to fool the discriminator, rather than approximating the original colors of the image (although, these can be equivalent). In this regard, the model performs quite well, often creating colorful and lifelike images.
+It is important to note that as a result of adversarial loss function, approximating the original colors of the images is not the only goal of the generator. It also has to fill the images with realistic/believable colors in order to fool the discriminator (although, these tasks can be equivalent). In this regard, the model performs quite well, often creating colorful and lifelike samples.
 
 #### Some bad-looking ones:
 <img src="imgs/img2.png" width="700">
