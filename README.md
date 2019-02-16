@@ -18,7 +18,7 @@ python3 train.py
 ```
 During training, a sample of images is saved after every epoch.
 
-To go through to CIFAR10 test set, and display/save some re-colorized images:
+To go through to CIFAR10 test set and display/save some re-colorized images:
 ```sh
 python3 test.py
 ```
