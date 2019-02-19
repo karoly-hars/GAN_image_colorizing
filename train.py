@@ -48,8 +48,8 @@ def main(args):
         discriminator.cuda()
     
     # Initialize weights
-    generator.apply(weights_init_normal)
-    discriminator.apply(weights_init_normal)      
+    #generator.apply(weights_init_normal)
+    #discriminator.apply(weights_init_normal)      
     
     # optimizer adam with reduced momentum
     g_optimizer = optim.Adam(generator.parameters(), lr=args.learning_rate_g, betas=(0.5, 0.999))
