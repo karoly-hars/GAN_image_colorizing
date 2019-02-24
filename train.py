@@ -6,10 +6,7 @@ from torch import optim
 import torch.nn as nn
 from torch.utils.data import DataLoader
 from datasets import * 
-#import get_cifar10_data, extract_cifar10_images, Cifar10Dataset
 from networks import * 
-#import Generator, Discriminator, weights_init_normal #, adjust_learning_rate
-#from helpers import ones_target, zeros_target, save_sample, print_losses, print_args
 from helpers import *
 import warnings
 warnings.simplefilter("ignore") # sorry. warnings annoye me
