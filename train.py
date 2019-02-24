@@ -5,9 +5,12 @@ import torch
 from torch import optim
 import torch.nn as nn
 from torch.utils.data import DataLoader
-from datasets import get_cifar10_data, extract_cifar10_images, Cifar10Dataset
-from networks import Generator, Discriminator, weights_init_normal, adjust_learning_rate
-from helpers import ones_target, zeros_target, save_sample, print_losses, print_args
+from datasets import * 
+#import get_cifar10_data, extract_cifar10_images, Cifar10Dataset
+from networks import * 
+#import Generator, Discriminator, weights_init_normal #, adjust_learning_rate
+#from helpers import ones_target, zeros_target, save_sample, print_losses, print_args
+from helpers import *
 import warnings
 warnings.simplefilter("ignore") # sorry. warnings annoye me
 import argparse
@@ -41,19 +44,20 @@ def main(args):
     use_gpu = torch.cuda.is_available()
     print("use_gpu={}".format(use_gpu))
     
-    generator = Generator()
-    discriminator = Discriminator()
+    generator = Generator(args.gen_norm)
+    discriminator = Discriminator(args.disc_norm)
     if use_gpu:
         generator.cuda()
         discriminator.cuda()
     
     # Initialize weights
-    #generator.apply(weights_init_normal)
-    #discriminator.apply(weights_init_normal)      
+    if args.apply_weight_init:
+        generator.apply(weights_init_normal)
+        discriminator.apply(weights_init_normal)      
     
     # optimizer adam with reduced momentum
-    g_optimizer = optim.Adam(generator.parameters(), lr=args.learning_rate_g, betas=(0.5, 0.999))
-    d_optimizer = optim.Adam(discriminator.parameters(), lr=args.learning_rate_d, betas=(0.5, 0.999))
+    g_optimizer = optim.Adam(generator.parameters(), lr=args.base_lr_gen, betas=(0.5, 0.999))
+    d_optimizer = optim.Adam(discriminator.parameters(), lr=args.base_lr_disc, betas=(0.5, 0.999))
     
     # losses
     l1_loss_fn = nn.L1Loss(reduction="mean")
@@ -111,8 +115,10 @@ def main(args):
                 if phase == "train":
                     # adjust LR
                     global_step += 1
-                    adjust_learning_rate(g_optimizer, args.learning_rate_g, global_step)
-                    adjust_learning_rate(d_optimizer, args.learning_rate_d, global_step)
+                    adjust_learning_rate(g_optimizer, global_step, base_lr=args.base_lr_gen, 
+                                         lr_decay_rate=args.lr_decay_rate, lr_decay_steps=args.lr_decay_steps)
+                    adjust_learning_rate(d_optimizer, global_step, base_lr=args.base_lr_disc, 
+                                         lr_decay_rate=args.lr_decay_rate, lr_decay_steps=args.lr_decay_steps)
     
                     # reset generator gradients
                     g_optimizer.zero_grad()
@@ -129,7 +135,7 @@ def main(args):
                     # l1 loss
                     l1_loss = l1_loss_fn(real_img_lab[:,1:,:,:], fake_img_ab)
                     # full gen loss
-                    full_gen_loss = adv_loss + (args.l1_weight * l1_loss)
+                    full_gen_loss = (1.0 - args.l1_weight) * adv_loss + (args.l1_weight * l1_loss)
     
                     if phase == "train":
                         full_gen_loss.backward()
@@ -188,14 +194,22 @@ if __name__ == "__main__":
     parser.add_argument("--data_path", type=str, default="./data", help="Download and extraction path for the dataset")
     parser.add_argument("--save_path", type=str, default="./checkpoints", help="Save and load path for the network weigths")
     parser.add_argument("--save_freq", type=int, default=5, help="Save frequency during training.")
+    
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument("--num_workers", type=int, default=4)
     parser.add_argument("--start_epoch", type=int, default=0, help="If start_epoch>0, attempts to a load previously saved weigth from the save_path")
     parser.add_argument("--max_epoch", type=int, default=200)
-    parser.add_argument("--learning_rate_g", type=float, default=3e-4, help="Base learning rate for the generator")
-    parser.add_argument("--learning_rate_d", type=float, default=6e-5, help="Base learning rate for the discriminator")
     parser.add_argument("--smoothing", type=float, default=0.9)
-    parser.add_argument("--l1_weight", type=int, default=100)
+    parser.add_argument("--l1_weight", type=int, default=0.99)
+    
+    parser.add_argument("--base_lr_gen", type=float, default=3e-4, help="Base learning rate for the generator")
+    parser.add_argument("--base_lr_disc", type=float, default=6e-5, help="Base learning rate for the discriminator")
+    parser.add_argument("--lr_decay_rate", type=float, default=0.1, help="Learning rate decay rate for both networks")
+    parser.add_argument("--lr_decay_steps", type=float, default=6e4, help="Learning rate decay steps for both networks")
+    
+    parser.add_argument("--gen_norm", type=str,  default="batch", choices=["batch", "instance"], help="definies the type of normalization used in the generator")
+    parser.add_argument("--disc_norm", type=str,  default="batch", choices=["batch", "instance", "spectral"], help="defines the type of normalization used in the discriminator")
+    parser.add_argument("--apply_weight_init", type=bool, default=True, help="If True, it applies the 'weights_init_normal' function from networks.py") 
     args = parser.parse_args()
     
     main(args)

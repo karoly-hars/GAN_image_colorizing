@@ -33,7 +33,7 @@ def main(args):
     if not os.path.exists(args.load_path) and args.load_path=="ep200_weigths_gen.pt":
         print('Downloading model weights...')
         os.system("wget https://www.dropbox.com/s/k3mcfdob00wuxh3/ep200_weigths_gen.pt")
-    generator = Generator()
+    generator = Generator(args.gen_norm)
     if use_gpu:
         generator.cuda()
     
@@ -58,7 +58,7 @@ def main(args):
         fake_img_lab = torch.cat([img_l, fake_img_ab], dim=1)
         
         print("sample {}/{}".format(idx+1, len(data_loader)+1))
-        save_sample(real_img_lab, fake_img_lab, osp.join(args.save_path, "test_sample_{}.png".format(idx)), show=True)          
+        save_sample(real_img_lab, fake_img_lab, osp.join(args.save_path, "test_sample_{}.png".format(idx)), show=False)          
 
 
 if __name__ == "__main__":
@@ -68,6 +68,7 @@ if __name__ == "__main__":
     parser.add_argument("--save_path", type=str, default="./output_imgs", help="Save path for the test imgs")   
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument("--num_workers", type=int, default=4)
+    parser.add_argument("--gen_norm", type=str,  default="batch", choices=["batch", "instance"], help="definies the type of normalization used in the generator")    
     args = parser.parse_args()
     
     main(args)

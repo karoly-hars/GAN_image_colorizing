@@ -19,7 +19,7 @@ def print_losses(epoch_gen_adv_loss, epoch_gen_l1_loss, epoch_disc_real_loss, ep
   
     print("  Generator: adversarial loss = {:.4f}, L1 loss = {:.4f}, full loss = {:.4f}"
          .format(epoch_gen_adv_loss / data_loader_len, epoch_gen_l1_loss / data_loader_len,
-                 (epoch_gen_adv_loss / data_loader_len) + (epoch_gen_l1_loss / data_loader_len)*l1_weight))   
+                 (epoch_gen_adv_loss / data_loader_len)*(1.0-l1_weight) + (epoch_gen_l1_loss / data_loader_len)*l1_weight))   
     print("  Discriminator: loss = {:.4f}"
           .format((epoch_disc_real_loss + epoch_disc_fake_loss) / (data_loader_len*2)))
     print("                 acc. = {:.4f} (real acc. = {:.4f}, fake acc. = {:.4f})"
@@ -59,8 +59,18 @@ def save_sample(real_imgs_lab, fake_imgs_lab, save_path, plot_size=20, scale=2.2
         cv2.imshow("sample", canvas)
         cv2.waitKey(10000)
 
+
 def print_args(args):
     arg_list = str(args)[10:-1].split(",")
     for arg in arg_list:
         print(arg.strip())
     print("")
+
+
+def adjust_learning_rate(optimizer, global_step, base_lr, lr_decay_rate=0.1, lr_decay_steps=6e4):
+    lr = base_lr * (lr_decay_rate ** (global_step/lr_decay_steps))
+    if lr < 1e-6:
+        lr = 1e-6
+    
+    for param_group in optimizer.param_groups:
+        param_group['lr'] = lr

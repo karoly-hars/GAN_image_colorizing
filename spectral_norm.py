@@ -1,5 +1,4 @@
-# spectral norm
-
+import torch
 from torch import nn
 from torch.nn import Parameter
 
