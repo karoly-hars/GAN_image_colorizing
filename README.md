@@ -38,3 +38,4 @@ Evidently, the generator sometimes fails to identify a region or an object on an
 ### Acknowledgements
  1. [The aforementioned paper](https://arxiv.org/abs/1803.05400), and the corresponding [github repo](https://github.com/ImagingLab/Colorizing-with-GANs).
  2. The excellent [PyTorch-GAN repository](https://github.com/eriklindernoren/PyTorch-GAN).
+ 3. The spectral norm implenetation is copy-pasted from [Christian Cosgrove's repo](https://github.com/christiancosgrove/pytorch-spectral-normalization-gan).
