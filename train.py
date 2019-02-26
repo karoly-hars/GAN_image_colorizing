@@ -48,7 +48,7 @@ def main(args):
         discriminator.cuda()
     
     # Initialize weights
-    if args.apply_weight_init:
+    if args.apply_weight_init == 1:
         generator.apply(weights_init_normal)
         discriminator.apply(weights_init_normal)      
     
@@ -197,16 +197,16 @@ if __name__ == "__main__":
     parser.add_argument("--start_epoch", type=int, default=0, help="If start_epoch>0, attempts to a load previously saved weigth from the save_path")
     parser.add_argument("--max_epoch", type=int, default=200)
     parser.add_argument("--smoothing", type=float, default=0.9)
-    parser.add_argument("--l1_weight", type=int, default=0.99)
+    parser.add_argument("--l1_weight", type=float, default=0.99)
     
     parser.add_argument("--base_lr_gen", type=float, default=3e-4, help="Base learning rate for the generator")
     parser.add_argument("--base_lr_disc", type=float, default=6e-5, help="Base learning rate for the discriminator")
     parser.add_argument("--lr_decay_rate", type=float, default=0.1, help="Learning rate decay rate for both networks")
     parser.add_argument("--lr_decay_steps", type=float, default=6e4, help="Learning rate decay steps for both networks")
     
-    parser.add_argument("--gen_norm", type=str,  default="batch", choices=["batch", "instance"], help="definies the type of normalization used in the generator")
-    parser.add_argument("--disc_norm", type=str,  default="batch", choices=["batch", "instance", "spectral"], help="defines the type of normalization used in the discriminator")
-    parser.add_argument("--apply_weight_init", type=bool, default=True, help="If True, it applies the 'weights_init_normal' function from networks.py") 
+    parser.add_argument("--gen_norm", type=str,  default="batch", choices=["batch", "instance"], help="Definies the type of normalization used in the generator")
+    parser.add_argument("--disc_norm", type=str,  default="batch", choices=["batch", "instance", "spectral"], help="Defines the type of normalization used in the discriminator")
+    parser.add_argument("--apply_weight_init", type=int, default=1, choices=[0, 1], help="If set to 1, applies the 'weights_init_normal' function from networks.py") 
     args = parser.parse_args()
     
     main(args)

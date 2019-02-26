@@ -60,6 +60,41 @@ def save_sample(real_imgs_lab, fake_imgs_lab, save_path, plot_size=20, scale=2.2
         cv2.waitKey(10000)
 
 
+def save_test_sample(real_imgs_lab, fake_imgs_lab1, fake_imgs_lab2, save_path, plot_size=14, scale=1.6, show=False):
+    batch_size = real_imgs_lab.size()[0]
+    plot_size = min(plot_size, batch_size)
+
+    # create white canvas
+    canvas = np.ones((plot_size*32 + (plot_size+1)*6, 4*32 + 5*8, 3), dtype=np.uint8)*255
+    
+    real_imgs_lab = real_imgs_lab.cpu().numpy()
+    fake_imgs_lab1 = fake_imgs_lab1.cpu().numpy()
+    fake_imgs_lab2 = fake_imgs_lab2.cpu().numpy()
+    
+    for i in range(0, plot_size):
+        # postprocess real and fake samples
+        real_bgr = postprocess(real_imgs_lab[i])
+        fake_bgr1 = postprocess(fake_imgs_lab1[i])  
+        fake_bgr2 = postprocess(fake_imgs_lab2[i])     
+        grayscale = np.expand_dims(cv2.cvtColor(real_bgr.astype(np.float32), cv2.COLOR_BGR2GRAY), 2)
+        # paint
+        x = (i+1)*6+i*32
+        canvas[x:x+32, 8:40, :] = real_bgr
+        canvas[x:x+32, 48:80, :] = np.repeat(grayscale, 3, axis=2)
+        canvas[x:x+32, 88:120, :] = fake_bgr1
+        canvas[x:x+32, 128:160, :] = fake_bgr2
+
+    # scale 
+    canvas = cv2.resize(canvas, None, fx=scale, fy=scale, interpolation=cv2.INTER_NEAREST)
+    # save 
+    cv2.imwrite(osp.join(save_path), canvas)
+    
+    if show:
+        cv2.destroyAllWindows()
+        cv2.imshow("sample", canvas)
+        cv2.waitKey(10000)
+        
+        
 def print_args(args):
     arg_list = str(args)[10:-1].split(",")
     for arg in arg_list:
