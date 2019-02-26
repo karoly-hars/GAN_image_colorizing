@@ -48,7 +48,7 @@ As expected, using spectral normalization in the discriminator network stabilize
 
 It is important to note that as a result of the adversarial loss function, approximating the original colors of the images is not the only goal of the generators. They also have to fill the images with realistic/believable colors in order to fool the discriminators (although, these tasks can be equivalent). In this regard, the models perform quite well, often creating colorful and lifelike samples.
 
-#### Test samples where both generators fail:
+#### Test samples where both generators struggle:
 <img src="imgs/img3.png" width="320">
 
 ### Acknowledgements
