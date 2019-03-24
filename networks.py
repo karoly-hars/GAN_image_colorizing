@@ -8,16 +8,15 @@ def weights_init_normal(m):
     classname = m.__class__.__name__
     if classname.find('Conv2d') != -1 or classname.find('ConvTranspose2d') != -1:
         torch.nn.init.normal_(m.weight.data, 0.0, 0.02)
-        torch.nn.init.constant_(m.bias.data, 0.0)
     elif classname.find('BatchNorm2d') != -1:
         torch.nn.init.normal_(m.weight.data, 1.0, 0.02)
         torch.nn.init.constant_(m.bias.data, 0.0)
 
 
 class ConvBlock(nn.Module):
-    def __init__(self, in_size, out_size, normalize=None, kernel_size=4, stride=2, padding=1, bias=True, dropout=0, activation_fn=nn.LeakyReLU(0.2)):
+    def __init__(self, in_size, out_size, normalize=None, kernel_size=4, stride=2, padding=1, dropout=0, activation_fn=nn.LeakyReLU(0.2)):
         super(ConvBlock, self).__init__()
-        model = [nn.Conv2d(in_size, out_size, kernel_size=kernel_size, stride=stride, padding=padding, bias=bias)]
+        model = [nn.Conv2d(in_size, out_size, kernel_size=kernel_size, stride=stride, padding=padding)]
         if normalize == "batch":
             # + batchnorm
             model.append(nn.BatchNorm2d(out_size))
@@ -26,7 +25,7 @@ class ConvBlock(nn.Module):
             model.append(nn.InstanceNorm2d(out_size))
         elif normalize == "spectral":
             # conv + spectralnorm
-            model = [SpectralNorm(nn.Conv2d(in_size, out_size, kernel_size=kernel_size, stride=stride, padding=padding, bias=bias))]
+            model = [SpectralNorm(nn.Conv2d(in_size, out_size, kernel_size=kernel_size, stride=stride, padding=padding))]
             
         model.append(activation_fn)
         if dropout>0:
@@ -39,9 +38,9 @@ class ConvBlock(nn.Module):
 
 
 class TransConvBlock(nn.Module):
-    def __init__(self, in_size, out_size, normalize=None, kernel_size=4, stride=2, padding=1, bias=True, dropout=0, activation_fn=nn.ReLU()):
+    def __init__(self, in_size, out_size, normalize=None, kernel_size=4, stride=2, padding=1, dropout=0, activation_fn=nn.ReLU()):
         super(TransConvBlock, self).__init__()
-        model = [nn.ConvTranspose2d(in_size, out_size, kernel_size=kernel_size, stride=stride, padding=padding, bias=bias)]
+        model = [nn.ConvTranspose2d(in_size, out_size, kernel_size=kernel_size, stride=stride, padding=padding)]
         if normalize == "batch":
             # add batch norm
             model.append(nn.BatchNorm2d(out_size))
@@ -68,17 +67,17 @@ class Generator(nn.Module):
         super(Generator, self).__init__()
         self.norm = normalization_type
         
-        self.down1 = ConvBlock(1, 64, normalize=self.norm, kernel_size=4, stride=1, padding=0, bias=True, dropout=0.0)
-        self.down2 = ConvBlock(64, 128, normalize=self.norm, kernel_size=4, stride=2, padding=1, bias=True, dropout=0.0)
-        self.down3 = ConvBlock(128, 256, normalize=self.norm, kernel_size=4, stride=2, padding=1, bias=True, dropout=0.0)
-        self.down4 = ConvBlock(256, 512, normalize=self.norm, kernel_size=4, stride=2, padding=1, bias=True, dropout=0.0)
-        self.down5 = ConvBlock(512, 512, normalize=self.norm, kernel_size=4, stride=2, padding=1, bias=True, dropout=0.0)
+        self.down1 = ConvBlock(1, 64, normalize=self.norm, kernel_size=4, stride=1, padding=0, dropout=0.0)
+        self.down2 = ConvBlock(64, 128, normalize=self.norm, kernel_size=4, stride=2, padding=1, dropout=0.0)
+        self.down3 = ConvBlock(128, 256, normalize=self.norm, kernel_size=4, stride=2, padding=1, dropout=0.0)
+        self.down4 = ConvBlock(256, 512, normalize=self.norm, kernel_size=4, stride=2, padding=1, dropout=0.0)
+        self.down5 = ConvBlock(512, 512, normalize=self.norm, kernel_size=4, stride=2, padding=1, dropout=0.0)
         
-        self.up1 = TransConvBlock(512, 512, normalize=self.norm, kernel_size=4, stride=2, padding=1, bias=True, dropout=0.5)
-        self.up2 = TransConvBlock(1024, 256, normalize=self.norm, kernel_size=4, stride=2, padding=1, bias=True, dropout=0.5)
-        self.up3 = TransConvBlock(512, 128, normalize=self.norm, kernel_size=4, stride=2, padding=1, bias=True, dropout=0.0)
-        self.up4 = TransConvBlock(256, 64, normalize=self.norm, kernel_size=4, stride=2, padding=1, bias=True, dropout=0.0)
-        self.final = ConvBlock(128, 2, normalize=None, kernel_size=1, stride=1, padding=0, bias=True, dropout=0.0, activation_fn=nn.Tanh())
+        self.up1 = TransConvBlock(512, 512, normalize=self.norm, kernel_size=4, stride=2, padding=1, dropout=0.5)
+        self.up2 = TransConvBlock(1024, 256, normalize=self.norm, kernel_size=4, stride=2, padding=1, dropout=0.5)
+        self.up3 = TransConvBlock(512, 128, normalize=self.norm, kernel_size=4, stride=2, padding=1, dropout=0.0)
+        self.up4 = TransConvBlock(256, 64, normalize=self.norm, kernel_size=4, stride=2, padding=1, dropout=0.0)
+        self.final = ConvBlock(128, 2, normalize=None, kernel_size=1, stride=1, padding=0, dropout=0.0, activation_fn=nn.Tanh())
 
         
     def forward(self, x):
@@ -106,11 +105,11 @@ class Discriminator(nn.Module):
         super(Discriminator, self).__init__()
         self.norm = normalization_type
         
-        self.down1 = ConvBlock(3, 64, normalize=None, kernel_size=4, stride=1, padding=0, bias=True, dropout=0.0)
-        self.down2 = ConvBlock(64, 128, normalize=self.norm, kernel_size=4, stride=2, padding=1, bias=True, dropout=0.0)
-        self.down3 = ConvBlock(128, 256, normalize=self.norm, kernel_size=4, stride=2, padding=1, bias=True, dropout=0.0)
-        self.down4 = ConvBlock(256, 512, normalize=self.norm, kernel_size=4, stride=2, padding=1, bias=True, dropout=0.0)
-        self.final = ConvBlock(512, 1, normalize=None, kernel_size=4, stride=1, padding=0, bias=True, dropout=0.0, activation_fn=nn.Sigmoid())
+        self.down1 = ConvBlock(3, 64, normalize=None, kernel_size=4, stride=1, padding=0, dropout=0.0)
+        self.down2 = ConvBlock(64, 128, normalize=self.norm, kernel_size=4, stride=2, padding=1, dropout=0.0)
+        self.down3 = ConvBlock(128, 256, normalize=self.norm, kernel_size=4, stride=2, padding=1, dropout=0.0)
+        self.down4 = ConvBlock(256, 512, normalize=self.norm, kernel_size=4, stride=2, padding=1, dropout=0.0)
+        self.final = ConvBlock(512, 1, normalize=None, kernel_size=4, stride=1, padding=0, dropout=0.0, activation_fn=nn.Sigmoid())
         
     def forward(self, x):
         x = F.upsample(x, size=(35, 35), mode='bilinear') 
