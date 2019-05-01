@@ -6,9 +6,9 @@ from spectral_norm import SpectralNorm
 
 def weights_init_normal(m):
     classname = m.__class__.__name__
-    if classname.find('Conv2d') != -1 or classname.find('ConvTranspose2d') != -1:
+    if classname.find("Conv2d") != -1 or classname.find("ConvTranspose2d") != -1:
         torch.nn.init.normal_(m.weight.data, 0.0, 0.02)
-    elif classname.find('BatchNorm2d') != -1:
+    elif classname.find("BatchNorm2d") != -1:
         torch.nn.init.normal_(m.weight.data, 1.0, 0.02)
         torch.nn.init.constant_(m.bias.data, 0.0)
 
@@ -84,7 +84,7 @@ class Generator(nn.Module):
                                activation_fn=nn.Tanh())
         
     def forward(self, x):
-        x = F.upsample(x, size=(35, 35), mode='bilinear')
+        x = F.upsample(x, size=(35, 35), mode="bilinear")
         d1 = self.down1(x)
         d2 = self.down2(d1)
         d3 = self.down3(d2)
@@ -115,7 +115,7 @@ class Discriminator(nn.Module):
         self.final = ConvBlock(512, 1, normalize=None, kernel_size=4, stride=1, padding=0, dropout=0, activation_fn=nn.Sigmoid())
         
     def forward(self, x):
-        x = F.upsample(x, size=(35, 35), mode='bilinear') 
+        x = F.upsample(x, size=(35, 35), mode="bilinear") 
         d1 = self.down1(x)
         d2 = self.down2(d1)
         d3 = self.down3(d2)

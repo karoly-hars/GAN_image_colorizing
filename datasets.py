@@ -27,8 +27,8 @@ def get_cifar10_data(data_path):
         
 def unpickle_batch(file):
     import pickle
-    with open(file, 'rb') as f:
-        dict_ = pickle.load(f, encoding='bytes')
+    with open(file, "rb") as f:
+        dict_ = pickle.load(f, encoding="bytes")
     return dict_
 
 
