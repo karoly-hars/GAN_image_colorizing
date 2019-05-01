@@ -1,6 +1,3 @@
-
-
-
 # Image colorization with GANs
 
 The aim of this project is to explore the topic of image colorization with the help of Generative Adversarial Networks.
@@ -37,7 +34,7 @@ Utilizing batch normalization in both networks resulted in vivid, colorful image
 
 As expected, using spectral normalization in the discriminator network stabilized the training process and reduced the number of required training steps. The results show that this approach produces better and more believable colors. However, when the input grayscale image contains an object with a number of possible colors (for example cars), the generator network often produces grayish outputs. 
 
-#### Qualitative evalutation
+#### Qualitative evaluation
 (left to right: original RGB, grayscale input, the output of the generator from the batch norm training, the output of the generator from the spectral norm training)
 
 #### Some test examples where spectral normalization is superior:

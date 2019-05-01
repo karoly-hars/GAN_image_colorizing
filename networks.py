@@ -14,7 +14,8 @@ def weights_init_normal(m):
 
 
 class ConvBlock(nn.Module):
-    def __init__(self, in_size, out_size, normalize=None, kernel_size=4, stride=2, padding=1, dropout=0, activation_fn=nn.LeakyReLU(0.2)):
+    def __init__(self, in_size, out_size, normalize=None, kernel_size=4, stride=2,
+                 padding=1, dropout=0, activation_fn=nn.LeakyReLU(0.2)):
         super(ConvBlock, self).__init__()
         model = [nn.Conv2d(in_size, out_size, kernel_size=kernel_size, stride=stride, padding=padding)]
         if normalize == "batch":
@@ -25,10 +26,11 @@ class ConvBlock(nn.Module):
             model.append(nn.InstanceNorm2d(out_size))
         elif normalize == "spectral":
             # conv + spectralnorm
-            model = [SpectralNorm(nn.Conv2d(in_size, out_size, kernel_size=kernel_size, stride=stride, padding=padding))]
+            model = [SpectralNorm(nn.Conv2d(in_size, out_size, kernel_size=kernel_size,
+                                            stride=stride, padding=padding))]
             
         model.append(activation_fn)
-        if dropout>0:
+        if dropout > 0:
             model.append(nn.Dropout(dropout))
         self.model = nn.Sequential(*model)
         
@@ -38,7 +40,8 @@ class ConvBlock(nn.Module):
 
 
 class TransConvBlock(nn.Module):
-    def __init__(self, in_size, out_size, normalize=None, kernel_size=4, stride=2, padding=1, dropout=0, activation_fn=nn.ReLU()):
+    def __init__(self, in_size, out_size, normalize=None, kernel_size=4, stride=2,
+                 padding=1, dropout=0, activation_fn=nn.ReLU()):
         super(TransConvBlock, self).__init__()
         model = [nn.ConvTranspose2d(in_size, out_size, kernel_size=kernel_size, stride=stride, padding=padding)]
         if normalize == "batch":
@@ -49,7 +52,7 @@ class TransConvBlock(nn.Module):
             model.append(nn.InstanceNorm2d(out_size))
             
         model.append(activation_fn)
-        if dropout>0:
+        if dropout > 0:
             model.append(nn.Dropout(dropout))        
         self.model = nn.Sequential(*model)
         
@@ -67,18 +70,18 @@ class Generator(nn.Module):
         super(Generator, self).__init__()
         self.norm = normalization_type
         
-        self.down1 = ConvBlock(1, 64, normalize=self.norm, kernel_size=4, stride=1, padding=0, dropout=0.0)
-        self.down2 = ConvBlock(64, 128, normalize=self.norm, kernel_size=4, stride=2, padding=1, dropout=0.0)
-        self.down3 = ConvBlock(128, 256, normalize=self.norm, kernel_size=4, stride=2, padding=1, dropout=0.0)
-        self.down4 = ConvBlock(256, 512, normalize=self.norm, kernel_size=4, stride=2, padding=1, dropout=0.0)
-        self.down5 = ConvBlock(512, 512, normalize=self.norm, kernel_size=4, stride=2, padding=1, dropout=0.0)
+        self.down1 = ConvBlock(1, 64, normalize=self.norm, kernel_size=4, stride=1, padding=0, dropout=0)
+        self.down2 = ConvBlock(64, 128, normalize=self.norm, kernel_size=4, stride=2, padding=1, dropout=0)
+        self.down3 = ConvBlock(128, 256, normalize=self.norm, kernel_size=4, stride=2, padding=1, dropout=0)
+        self.down4 = ConvBlock(256, 512, normalize=self.norm, kernel_size=4, stride=2, padding=1, dropout=0)
+        self.down5 = ConvBlock(512, 512, normalize=self.norm, kernel_size=4, stride=2, padding=1, dropout=0)
         
         self.up1 = TransConvBlock(512, 512, normalize=self.norm, kernel_size=4, stride=2, padding=1, dropout=0.5)
         self.up2 = TransConvBlock(1024, 256, normalize=self.norm, kernel_size=4, stride=2, padding=1, dropout=0.5)
-        self.up3 = TransConvBlock(512, 128, normalize=self.norm, kernel_size=4, stride=2, padding=1, dropout=0.0)
-        self.up4 = TransConvBlock(256, 64, normalize=self.norm, kernel_size=4, stride=2, padding=1, dropout=0.0)
-        self.final = ConvBlock(128, 2, normalize=None, kernel_size=1, stride=1, padding=0, dropout=0.0, activation_fn=nn.Tanh())
-
+        self.up3 = TransConvBlock(512, 128, normalize=self.norm, kernel_size=4, stride=2, padding=1, dropout=0)
+        self.up4 = TransConvBlock(256, 64, normalize=self.norm, kernel_size=4, stride=2, padding=1, dropout=0)
+        self.final = ConvBlock(128, 2, normalize=None, kernel_size=1, stride=1, padding=0, dropout=0,
+                               activation_fn=nn.Tanh())
         
     def forward(self, x):
         x = F.upsample(x, size=(35, 35), mode='bilinear')
@@ -88,10 +91,10 @@ class Generator(nn.Module):
         d4 = self.down4(d3)
         d5 = self.down5(d4)
         
-        u1 = self.up1(d5,d4)
-        u2 = self.up2(u1,d3)
-        u3 = self.up3(u2,d2)
-        u4 = self.up4(u3,d1)    
+        u1 = self.up1(d5, d4)
+        u2 = self.up2(u1, d3)
+        u3 = self.up3(u2, d2)
+        u4 = self.up4(u3, d1)
         
         x = self.final(u4) 
         return x
@@ -105,11 +108,11 @@ class Discriminator(nn.Module):
         super(Discriminator, self).__init__()
         self.norm = normalization_type
         
-        self.down1 = ConvBlock(3, 64, normalize=None, kernel_size=4, stride=1, padding=0, dropout=0.0)
-        self.down2 = ConvBlock(64, 128, normalize=self.norm, kernel_size=4, stride=2, padding=1, dropout=0.0)
-        self.down3 = ConvBlock(128, 256, normalize=self.norm, kernel_size=4, stride=2, padding=1, dropout=0.0)
-        self.down4 = ConvBlock(256, 512, normalize=self.norm, kernel_size=4, stride=2, padding=1, dropout=0.0)
-        self.final = ConvBlock(512, 1, normalize=None, kernel_size=4, stride=1, padding=0, dropout=0.0, activation_fn=nn.Sigmoid())
+        self.down1 = ConvBlock(3, 64, normalize=None, kernel_size=4, stride=1, padding=0, dropout=0)
+        self.down2 = ConvBlock(64, 128, normalize=self.norm, kernel_size=4, stride=2, padding=1, dropout=0)
+        self.down3 = ConvBlock(128, 256, normalize=self.norm, kernel_size=4, stride=2, padding=1, dropout=0)
+        self.down4 = ConvBlock(256, 512, normalize=self.norm, kernel_size=4, stride=2, padding=1, dropout=0)
+        self.final = ConvBlock(512, 1, normalize=None, kernel_size=4, stride=1, padding=0, dropout=0, activation_fn=nn.Sigmoid())
         
     def forward(self, x):
         x = F.upsample(x, size=(35, 35), mode='bilinear') 
@@ -121,4 +124,3 @@ class Discriminator(nn.Module):
         x = self.final(d4)
         x = x.view(x.size()[0], -1)
         return x
-        
