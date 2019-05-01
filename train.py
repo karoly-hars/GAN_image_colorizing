@@ -192,9 +192,8 @@ if __name__ == "__main__":
     parser.add_argument("--data_path", type=str, default="./data",
                         help="Download and extraction path for the dataset")
     parser.add_argument("--save_path", type=str, default="./checkpoints",
-                        help="Save and load path for the network weigths")
+                        help="Save and load path for the network weights")
     parser.add_argument("--save_freq", type=int, default=5, help="Save frequency during training.")
-
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument("--num_workers", type=int, default=4)
     parser.add_argument("--start_epoch", type=int, default=0,
@@ -202,12 +201,10 @@ if __name__ == "__main__":
     parser.add_argument("--max_epoch", type=int, default=200)
     parser.add_argument("--smoothing", type=float, default=0.9)
     parser.add_argument("--l1_weight", type=float, default=0.99)
-
     parser.add_argument("--base_lr_gen", type=float, default=3e-4, help="Base learning rate for the generator")
     parser.add_argument("--base_lr_disc", type=float, default=6e-5, help="Base learning rate for the discriminator")
     parser.add_argument("--lr_decay_rate", type=float, default=0.1, help="Learning rate decay rate for both networks")
     parser.add_argument("--lr_decay_steps", type=float, default=6e4, help="Learning rate decay steps for both networks")
-
     parser.add_argument("--gen_norm", type=str, default="batch", choices=["batch", "instance"],
                         help="Defines the type of normalization used in the generator")
     parser.add_argument("--disc_norm", type=str, default="batch", choices=["batch", "instance", "spectral"],
