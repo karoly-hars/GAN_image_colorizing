@@ -1,7 +1,7 @@
+import os
 import torch
 import cv2
 import numpy as np
-import os.path as osp
 from datasets import postprocess
 
 
@@ -54,7 +54,7 @@ def save_sample(real_imgs_lab, fake_imgs_lab, save_path, plot_size=20, scale=2.2
     # scale 
     canvas = cv2.resize(canvas, None, fx=scale, fy=scale, interpolation=cv2.INTER_NEAREST)
     # save 
-    cv2.imwrite(osp.join(save_path), canvas)
+    cv2.imwrite(os.path.join(save_path), canvas)
     
     if show:
         cv2.destroyAllWindows()
@@ -89,7 +89,7 @@ def save_test_sample(real_imgs_lab, fake_imgs_lab1, fake_imgs_lab2, save_path, p
     # scale 
     canvas = cv2.resize(canvas, None, fx=scale, fy=scale, interpolation=cv2.INTER_NEAREST)
     # save 
-    cv2.imwrite(osp.join(save_path), canvas)
+    cv2.imwrite(os.path.join(save_path), canvas)
     
     if show:
         cv2.destroyAllWindows()
