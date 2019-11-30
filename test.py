@@ -1,19 +1,15 @@
-import argparse
 import os
-import os.path as osp
+import argparse
 import torch
 from torch.utils.data import DataLoader
+import warnings
+warnings.simplefilter("ignore")  # sorry. warnings annoy me
 from datasets import get_cifar10_data, extract_cifar10_images, Cifar10Dataset
 from networks import Generator
 from helpers import save_test_sample, print_args
-import warnings
-warnings.simplefilter("ignore")  # sorry. warnings annoy me
 
 
-def main(args):
-    # print args
-    print_args(args)
-
+def run_test(args):
     # download and extract dataset
     get_cifar10_data(args.data_path)
     data_dirs = extract_cifar10_images(args.data_path)
@@ -73,15 +69,23 @@ def main(args):
 
         print("sample {}/{}".format(idx + 1, len(data_loader) + 1))
         save_test_sample(real_img_lab, fake_img_lab_bn, fake_img_lab_sn,
-                         osp.join(args.save_path, "test_sample_{}.png".format(idx)), show=True)
+                         os.path.join(args.save_path, "test_sample_{}.png".format(idx)), show=True)
 
 
-if __name__ == "__main__":
+def get_arguments():
     parser = argparse.ArgumentParser(description="Image colorization with GANs")
     parser.add_argument("--data_path", type=str, default="./data", help="Download and extraction path for the dataset")
     parser.add_argument("--save_path", type=str, default="./output_imgs", help="Save path for the test imgs")
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument("--num_workers", type=int, default=4)
+    
     args = parser.parse_args()
+    return args
 
-    main(args)
+
+if __name__ == "__main__":
+    args = get_arguments()
+    # print args
+    print_args(args)
+
+    run_test(args)

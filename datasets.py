@@ -1,5 +1,4 @@
 import os
-import os.path as osp
 import cv2
 import numpy as np
 from torch.utils.data import Dataset
@@ -7,18 +6,18 @@ import random
 
 
 def get_cifar10_data(data_path):
-    if not osp.exists(data_path):
+    if not os.path.exists(data_path):
         # download
         print("Downloading dataset...")
         import urllib.request
         os.makedirs(data_path)
         urllib.request.urlretrieve("https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz",
-                                   osp.join(data_path, "cifar-10-python.tar.gz"))
+                                   os.path.join(data_path, "cifar-10-python.tar.gz"))
 
         # extract file
         print("unzipping dataset...")
         import tarfile
-        tar = tarfile.open(osp.join(data_path, "cifar-10-python.tar.gz"), "r:gz")
+        tar = tarfile.open(os.path.join(data_path, "cifar-10-python.tar.gz"), "r:gz")
         tar.extractall(path=data_path)
         tar.close()
     else:
@@ -32,20 +31,20 @@ def unpickle_batch(file):
     return dict_
 
 
-# extract images from batches
 def extract_cifar10_images(data_path):
-    
+    # extract images from batches
     data_batches = dict()
-    data_batches["test"] = [osp.join(data_path, "cifar-10-batches-py", "test_batch")]
-    data_batches["train"] = [osp.join(data_path, "cifar-10-batches-py", f) for f in ["data_batch_1", "data_batch_2",
-                                                                                     "data_batch_3", "data_batch_4",
-                                                                                     "data_batch_5"]]
+    data_batches["test"] = [os.path.join(data_path, "cifar-10-batches-py", "test_batch")]
+    data_batches["train"] = [os.path.join(data_path, "cifar-10-batches-py", f) for f in [
+        "data_batch_1","data_batch_2", "data_batch_3", "data_batch_4", "data_batch_5"
+    ]]
+
     data_dirs = dict()
-    data_dirs["test"] = osp.join(data_path, "cifar-10-images", "test")
-    data_dirs["train"] = osp.join(data_path, "cifar-10-images", "train")
+    data_dirs["test"] = os.path.join(data_path, "cifar-10-images", "test")
+    data_dirs["train"] = os.path.join(data_path, "cifar-10-images", "train")
     
     for phase in ["test", "train"]:
-        if not osp.exists(data_dirs[phase]):
+        if not os.path.exists(data_dirs[phase]):
             print("extracting {} images...".format(phase))
             os.makedirs(data_dirs[phase])
             
@@ -57,7 +56,7 @@ def extract_cifar10_images(data_path):
                     r, g, b = np.reshape(r, (32, -1)), np.reshape(g, (32, -1)), np.reshape(b, (32, -1))
                     img = np.stack((b, g, r), axis=2)
                     
-                    save_path = osp.join(data_dirs[phase], image_name.decode("utf-8"))
+                    save_path = os.path.join(data_dirs[phase], image_name.decode("utf-8"))
                     cv2.imwrite(save_path, img)
         else:
             print("{} image set already extracted".format(phase))
@@ -95,7 +94,7 @@ def postprocess(img_lab):
     
 class Cifar10Dataset(Dataset):
     def __init__(self, root_dir, mirror=False, random_seed=None):
-        self.img_paths = [osp.join(root_dir, f) for f in os.listdir(root_dir)]
+        self.img_paths = [os.path.join(root_dir, f) for f in os.listdir(root_dir)]
         if random_seed is not None:
             self.img_paths.sort()
             random.Random(random_seed).shuffle(self.img_paths)

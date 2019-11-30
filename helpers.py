@@ -1,8 +1,8 @@
 import torch
-from datasets import postprocess
 import cv2
 import numpy as np
 import os.path as osp
+from datasets import postprocess
 
 
 def ones_target(size):

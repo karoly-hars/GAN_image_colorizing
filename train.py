@@ -1,17 +1,17 @@
+import os
 import argparse
-from torch import optim
+import numpy as np
+import torch
 from torch.utils.data import DataLoader
-from datasets import *
-from networks import *
-from helpers import *
 import warnings
 warnings.simplefilter("ignore")  # sorry. warnings annoy me
+from datasets import get_cifar10_data, extract_cifar10_images, Cifar10Dataset
+from networks import Generator, Discriminator, weights_init_normal
+from helpers import print_args, print_losses, ones_target, zeros_target
+from helpers import save_sample, adjust_learning_rate
 
 
-def main(args):
-    # print args
-    print_args(args)
-
+def run_training(args):
     # download and extract dataset
     get_cifar10_data(args.data_path)
     data_dirs = extract_cifar10_images(args.data_path)
@@ -46,13 +46,13 @@ def main(args):
         generator.apply(weights_init_normal)
         discriminator.apply(weights_init_normal)
 
-        # optimizer adam with reduced momentum
-    g_optimizer = optim.Adam(generator.parameters(), lr=args.base_lr_gen, betas=(0.5, 0.999))
-    d_optimizer = optim.Adam(discriminator.parameters(), lr=args.base_lr_disc, betas=(0.5, 0.999))
+    # optimizer adam with reduced momentum
+    g_optimizer = torch.optim.Adam(generator.parameters(), lr=args.base_lr_gen, betas=(0.5, 0.999))
+    d_optimizer = torch.optim.Adam(discriminator.parameters(), lr=args.base_lr_disc, betas=(0.5, 0.999))
 
     # losses
-    l1_loss_fn = nn.L1Loss(reduction="mean")
-    discriminator_loss_fn = nn.BCELoss(reduction="mean")
+    l1_loss_fn = torch.nn.L1Loss(reduction="mean")
+    discriminator_loss_fn = torch.nn.BCELoss(reduction="mean")
 
     # make save dir, if needed
     if not os.path.exists(args.save_path):
@@ -63,15 +63,15 @@ def main(args):
         global_step = args.start_epoch * len(data_loaders["train"])
         if use_gpu:
             generator.load_state_dict(
-                torch.load(osp.join(args.save_path, "checkpoint_ep{}_gen.pt".format(args.start_epoch - 1))))
+                torch.load(os.path.join(args.save_path, "checkpoint_ep{}_gen.pt".format(args.start_epoch - 1))))
             discriminator.load_state_dict(
-                torch.load(osp.join(args.save_path, "checkpoint_ep{}_disc.pt".format(args.start_epoch - 1))))
+                torch.load(os.path.join(args.save_path, "checkpoint_ep{}_disc.pt".format(args.start_epoch - 1))))
         else:
             generator.load_state_dict(
-                torch.load(osp.join(args.save_path, "checkpoint_ep{}_gen.pt".format(args.start_epoch - 1)),
+                torch.load(os.path.join(args.save_path, "checkpoint_ep{}_gen.pt".format(args.start_epoch - 1)),
                            map_location="cpu"))
             discriminator.load_state_dict(
-                torch.load(osp.join(args.save_path, "checkpoint_ep{}_disc.pt".format(args.start_epoch - 1)),
+                torch.load(os.path.join(args.save_path, "checkpoint_ep{}_disc.pt".format(args.start_epoch - 1)),
                            map_location="cpu"))
 
     #  begin training    
@@ -177,17 +177,18 @@ def main(args):
             # save after every nth epoch
             if phase == "test":
                 if epoch % args.save_freq == 0 or epoch == args.max_epoch - 1:
-                    torch.save(generator.state_dict(), osp.join(args.save_path, "checkpoint_ep{}_gen.pt".format(epoch)))
+                    torch.save(generator.state_dict(),
+                               os.path.join(args.save_path, "checkpoint_ep{}_gen.pt".format(epoch)))
                     torch.save(discriminator.state_dict(),
-                               osp.join(args.save_path, "checkpoint_ep{}_disc.pt".format(epoch)))
+                               os.path.join(args.save_path, "checkpoint_ep{}_disc.pt".format(epoch)))
                     print("Checkpoint.")
 
-                    # display sample images
+                # display sample images
                 save_sample(sample_real_img_lab, sample_fake_img_lab,
-                            osp.join(args.save_path, "sample_ep{}.png".format(epoch)))
+                            os.path.join(args.save_path, "sample_ep{}.png".format(epoch)))
 
 
-if __name__ == "__main__":
+def get_arguments():
     parser = argparse.ArgumentParser(description="Image colorization with GANs")
     parser.add_argument("--data_path", type=str, default="./data",
                         help="Download and extraction path for the dataset")
@@ -211,6 +212,11 @@ if __name__ == "__main__":
                         help="Defines the type of normalization used in the discriminator")
     parser.add_argument("--apply_weight_init", type=int, default=1, choices=[0, 1],
                         help="If set to 1, applies the 'weights_init_normal' function from networks.py")
-    args = parser.parse_args()
+    return parser.parse_args()
 
-    main(args)
+
+if __name__ == "__main__":
+    args = get_arguments()
+    print_args(args)
+
+    run_training(args)
