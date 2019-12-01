@@ -3,10 +3,10 @@ import argparse
 import torch
 from torch.utils.data import DataLoader
 import warnings
-warnings.simplefilter("ignore")  # sorry. warnings annoy me
 from datasets import get_cifar10_data, extract_cifar10_images, Cifar10Dataset
 from networks import Generator
 from helpers import save_test_sample, print_args
+warnings.simplefilter("ignore")  # sorry. warnings annoy me
 
 
 def run_test(args):

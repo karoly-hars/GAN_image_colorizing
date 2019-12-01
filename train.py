@@ -4,11 +4,11 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 import warnings
-warnings.simplefilter("ignore")  # sorry. warnings annoy me
 from datasets import get_cifar10_data, extract_cifar10_images, Cifar10Dataset
 from networks import Generator, Discriminator, weights_init_normal
 from helpers import print_args, print_losses, ones_target, zeros_target
 from helpers import save_sample, adjust_learning_rate
+warnings.simplefilter("ignore")  # sorry. warnings annoy me
 
 
 def run_training(args):
@@ -63,16 +63,20 @@ def run_training(args):
         global_step = args.start_epoch * len(data_loaders["train"])
         if use_gpu:
             generator.load_state_dict(
-                torch.load(os.path.join(args.save_path, "checkpoint_ep{}_gen.pt".format(args.start_epoch - 1))))
+                torch.load(os.path.join(args.save_path, "checkpoint_ep{}_gen.pt".format(args.start_epoch - 1)))
+            )
             discriminator.load_state_dict(
-                torch.load(os.path.join(args.save_path, "checkpoint_ep{}_disc.pt".format(args.start_epoch - 1))))
+                torch.load(os.path.join(args.save_path, "checkpoint_ep{}_disc.pt".format(args.start_epoch - 1)))
+            )
         else:
             generator.load_state_dict(
                 torch.load(os.path.join(args.save_path, "checkpoint_ep{}_gen.pt".format(args.start_epoch - 1)),
-                           map_location="cpu"))
+                           map_location="cpu")
+            )
             discriminator.load_state_dict(
                 torch.load(os.path.join(args.save_path, "checkpoint_ep{}_disc.pt".format(args.start_epoch - 1)),
-                           map_location="cpu"))
+                           map_location="cpu")
+            )
 
     #  begin training    
     for epoch in range(args.start_epoch, args.max_epoch):
@@ -184,7 +188,8 @@ def run_training(args):
                     print("Checkpoint.")
 
                 # display sample images
-                save_sample(sample_real_img_lab, sample_fake_img_lab,
+                save_sample(sample_real_img_lab,
+                            sample_fake_img_lab,
                             os.path.join(args.save_path, "sample_ep{}.png".format(epoch)))
 
 

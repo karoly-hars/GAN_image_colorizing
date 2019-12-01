@@ -36,7 +36,7 @@ def extract_cifar10_images(data_path):
     data_batches = dict()
     data_batches["test"] = [os.path.join(data_path, "cifar-10-batches-py", "test_batch")]
     data_batches["train"] = [os.path.join(data_path, "cifar-10-batches-py", f) for f in [
-        "data_batch_1","data_batch_2", "data_batch_3", "data_batch_4", "data_batch_5"
+        "data_batch_1", "data_batch_2", "data_batch_3", "data_batch_4", "data_batch_5"
     ]]
 
     data_dirs = dict()
