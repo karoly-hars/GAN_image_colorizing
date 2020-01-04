@@ -4,7 +4,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 import warnings
-from datasets import get_cifar10_data, extract_cifar10_images, Cifar10Dataset
+from datasets import Cifar10Dataset
 from networks import Generator, Discriminator, weights_init_normal
 from helpers import print_args, print_losses, ones_target, zeros_target
 from helpers import save_sample, adjust_learning_rate
@@ -12,18 +12,11 @@ warnings.simplefilter("ignore")  # sorry. warnings annoy me
 
 
 def run_training(args):
-    # download and extract dataset
-    get_cifar10_data(args.data_path)
-    data_dirs = extract_cifar10_images(args.data_path)
-
-    datasets = dict()
-    datasets["train"] = Cifar10Dataset(root_dir=data_dirs["train"], mirror=True)
-    datasets["test"] = Cifar10Dataset(root_dir=data_dirs["test"], mirror=False, random_seed=1)
-
+    datasets = Cifar10Dataset.get_datasets_from_scratch(args.data_path)
     for phase in ["train", "test"]:
         print("{} dataset len: {}".format(phase, len(datasets[phase])))
 
-    # define dataloaders
+    # define loaders
     data_loaders = dict()
     data_loaders["train"] = DataLoader(datasets["train"], batch_size=args.batch_size,
                                        shuffle=True, num_workers=args.num_workers)
@@ -194,6 +187,7 @@ def run_training(args):
 
 
 def get_arguments():
+    """Get command line arguments."""
     parser = argparse.ArgumentParser(description="Image colorization with GANs")
     parser.add_argument("--data_path", type=str, default="./data",
                         help="Download and extraction path for the dataset")
@@ -222,6 +216,8 @@ def get_arguments():
 
 if __name__ == "__main__":
     args = get_arguments()
+
+    # display arguments
     print_args(args)
 
     run_training(args)

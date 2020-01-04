@@ -5,6 +5,7 @@ from spectral_norm import SpectralNorm
 
 
 def weights_init_normal(m):
+    """Initialize the weights of a module with Gaussian distribution."""
     classname = m.__class__.__name__
     if classname.find("Conv2d") != -1 or classname.find("ConvTranspose2d") != -1:
         torch.nn.init.normal_(m.weight.data, 0.0, 0.02)
@@ -18,6 +19,7 @@ class ConvBlock(nn.Module):
                  padding=1, dropout=0, activation_fn=nn.LeakyReLU(0.2)):
         super(ConvBlock, self).__init__()
         model = [nn.Conv2d(in_size, out_size, kernel_size=kernel_size, stride=stride, padding=padding)]
+
         if normalize == "batch":
             # + batchnorm
             model.append(nn.BatchNorm2d(out_size))
@@ -31,8 +33,10 @@ class ConvBlock(nn.Module):
             ]
             
         model.append(activation_fn)
+
         if dropout > 0:
             model.append(nn.Dropout(dropout))
+
         self.model = nn.Sequential(*model)
         
     def forward(self, x):
@@ -45,6 +49,7 @@ class TransConvBlock(nn.Module):
                  padding=1, dropout=0.0, activation_fn=nn.ReLU()):
         super(TransConvBlock, self).__init__()
         model = [nn.ConvTranspose2d(in_size, out_size, kernel_size=kernel_size, stride=stride, padding=padding)]
+
         if normalize == "batch":
             # add batch norm
             model.append(nn.BatchNorm2d(out_size))
@@ -53,8 +58,10 @@ class TransConvBlock(nn.Module):
             model.append(nn.InstanceNorm2d(out_size))
             
         model.append(activation_fn)
+
         if dropout > 0:
-            model.append(nn.Dropout(dropout))        
+            model.append(nn.Dropout(dropout))
+
         self.model = nn.Sequential(*model)
         
     def forward(self, x, skip_input):
@@ -63,10 +70,9 @@ class TransConvBlock(nn.Module):
         return x
 
 
-# -------------------
-# ---- Generator ----
-# -------------------
 class Generator(nn.Module):
+    """Generator architecture."""
+
     def __init__(self, normalization_type=None):
         super(Generator, self).__init__()
         self.norm = normalization_type
@@ -102,10 +108,9 @@ class Generator(nn.Module):
         return x
 
 
-# -------------------
-# -- Discriminator --
-# -------------------
 class Discriminator(nn.Module):
+    """Discriminator architecture."""
+
     def __init__(self, normalization_type):
         super(Discriminator, self).__init__()
         self.norm = normalization_type

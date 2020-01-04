@@ -3,19 +3,15 @@ import argparse
 import torch
 from torch.utils.data import DataLoader
 import warnings
-from datasets import get_cifar10_data, extract_cifar10_images, Cifar10Dataset
+from datasets import Cifar10Dataset
 from networks import Generator
 from helpers import save_test_sample, print_args
 warnings.simplefilter("ignore")  # sorry. warnings annoy me
 
 
 def run_test(args):
-    # download and extract dataset
-    get_cifar10_data(args.data_path)
-    data_dirs = extract_cifar10_images(args.data_path)
 
-    dataset = Cifar10Dataset(root_dir=data_dirs["test"], mirror=False, random_seed=1)
-
+    dataset = Cifar10Dataset.get_datasets_from_scratch(args.data_path)["test"]
     print("test dataset len: {}".format(len(dataset)))
 
     # define dataloader    
@@ -73,6 +69,7 @@ def run_test(args):
 
 
 def get_arguments():
+    """Get command line arguments."""
     parser = argparse.ArgumentParser(description="Image colorization with GANs")
     parser.add_argument("--data_path", type=str, default="./data", help="Download and extraction path for the dataset")
     parser.add_argument("--save_path", type=str, default="./output_imgs", help="Save path for the test imgs")
@@ -85,7 +82,8 @@ def get_arguments():
 
 if __name__ == "__main__":
     args = get_arguments()
-    # print args
+
+    # display args
     print_args(args)
 
     run_test(args)

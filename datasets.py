@@ -1,68 +1,16 @@
 import os
 import cv2
+import pickle
 import numpy as np
 from torch.utils.data import Dataset
 import random
 
 
-def get_cifar10_data(data_path):
-    if not os.path.exists(data_path):
-        # download
-        print("Downloading dataset...")
-        import urllib.request
-        os.makedirs(data_path)
-        urllib.request.urlretrieve("https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz",
-                                   os.path.join(data_path, "cifar-10-python.tar.gz"))
-
-        # extract file
-        print("unzipping dataset...")
-        import tarfile
-        tar = tarfile.open(os.path.join(data_path, "cifar-10-python.tar.gz"), "r:gz")
-        tar.extractall(path=data_path)
-        tar.close()
-    else:
-        print("cifar10 already downloaded.")
-
-        
 def unpickle_batch(file):
-    import pickle
     with open(file, "rb") as f:
         dict_ = pickle.load(f, encoding="bytes")
     return dict_
 
-
-def extract_cifar10_images(data_path):
-    # extract images from batches
-    data_batches = dict()
-    data_batches["test"] = [os.path.join(data_path, "cifar-10-batches-py", "test_batch")]
-    data_batches["train"] = [os.path.join(data_path, "cifar-10-batches-py", f) for f in [
-        "data_batch_1", "data_batch_2", "data_batch_3", "data_batch_4", "data_batch_5"
-    ]]
-
-    data_dirs = dict()
-    data_dirs["test"] = os.path.join(data_path, "cifar-10-images", "test")
-    data_dirs["train"] = os.path.join(data_path, "cifar-10-images", "train")
-    
-    for phase in ["test", "train"]:
-        if not os.path.exists(data_dirs[phase]):
-            print("extracting {} images...".format(phase))
-            os.makedirs(data_dirs[phase])
-            
-            for data_batch in data_batches[phase]:
-                batch = unpickle_batch(data_batch)
-                
-                for image_name, image_parts in zip(batch[b'filenames'], batch[b'data']):
-                    r, g, b = image_parts[0:1024], image_parts[1024:2048], image_parts[2048:]
-                    r, g, b = np.reshape(r, (32, -1)), np.reshape(g, (32, -1)), np.reshape(b, (32, -1))
-                    img = np.stack((b, g, r), axis=2)
-                    
-                    save_path = os.path.join(data_dirs[phase], image_name.decode("utf-8"))
-                    cv2.imwrite(save_path, img)
-        else:
-            print("{} image set already extracted".format(phase))
-            
-    return data_dirs
-            
 
 def preprocess(img_bgr):
     # to 32bit img
@@ -113,3 +61,69 @@ class Cifar10Dataset(Dataset):
           
         img_lab = preprocess(img_bgr) 
         return img_lab
+
+    @classmethod
+    def get_datasets_from_scratch(cls, data_path):
+        """Download and extract dataset + create dataset objects."""
+        cls.get_cifar10_data(data_path)
+        data_dirs = cls.extract_cifar10_images(data_path)
+
+        datasets = dict()
+        datasets["train"] = cls(root_dir=data_dirs["train"], mirror=True)
+        datasets["test"] = cls(root_dir=data_dirs["test"], mirror=False, random_seed=1)
+
+        return datasets
+
+    @staticmethod
+    def get_cifar10_data(data_path):
+        """Download and uncompress CIFAR10 dataset."""
+        if not os.path.exists(data_path):
+            # download
+            print("Downloading dataset...")
+            import urllib.request
+            os.makedirs(data_path)
+            urllib.request.urlretrieve("https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz",
+                                       os.path.join(data_path, "cifar-10-python.tar.gz"))
+
+            # extract file
+            print("unzipping dataset...")
+            import tarfile
+            tar = tarfile.open(os.path.join(data_path, "cifar-10-python.tar.gz"), "r:gz")
+            tar.extractall(path=data_path)
+            tar.close()
+        else:
+            print("cifar10 already downloaded.")
+
+    @staticmethod
+    def extract_cifar10_images(data_path):
+        """Restructure the CIFAR10 images and split it into train and test."""
+        # extract images from batches
+        data_batches = dict()
+        data_batches["test"] = [os.path.join(data_path, "cifar-10-batches-py", "test_batch")]
+        data_batches["train"] = [os.path.join(data_path, "cifar-10-batches-py", f) for f in [
+            "data_batch_1", "data_batch_2", "data_batch_3", "data_batch_4", "data_batch_5"
+        ]]
+
+        data_dirs = dict()
+        data_dirs["test"] = os.path.join(data_path, "cifar-10-images", "test")
+        data_dirs["train"] = os.path.join(data_path, "cifar-10-images", "train")
+
+        for phase in ["test", "train"]:
+            if not os.path.exists(data_dirs[phase]):
+                print("extracting {} images...".format(phase))
+                os.makedirs(data_dirs[phase])
+
+                for data_batch in data_batches[phase]:
+                    batch = unpickle_batch(data_batch)
+
+                    for image_name, image_parts in zip(batch[b'filenames'], batch[b'data']):
+                        r, g, b = image_parts[0:1024], image_parts[1024:2048], image_parts[2048:]
+                        r, g, b = np.reshape(r, (32, -1)), np.reshape(g, (32, -1)), np.reshape(b, (32, -1))
+                        img = np.stack((b, g, r), axis=2)
+
+                        save_path = os.path.join(data_dirs[phase], image_name.decode("utf-8"))
+                        cv2.imwrite(save_path, img)
+            else:
+                print("{} image set already extracted".format(phase))
+
+        return data_dirs
