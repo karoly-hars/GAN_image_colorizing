@@ -7,17 +7,17 @@ from datasets import postprocess
 def print_losses(epoch_gen_adv_loss, epoch_gen_l1_loss, epoch_disc_real_loss, epoch_disc_fake_loss,
                  epoch_disc_real_acc, epoch_disc_fake_acc, data_loader_len, l1_weight): 
     """Create a display all the losses and accuracies."""
-    print("  Generator: adversarial loss = {:.4f}, L1 loss = {:.4f}, full loss = {:.4f}".format(
+    print('  Generator: adversarial loss = {:.4f}, L1 loss = {:.4f}, full loss = {:.4f}'.format(
         epoch_gen_adv_loss / data_loader_len,
         epoch_gen_l1_loss / data_loader_len,
         (epoch_gen_adv_loss / data_loader_len)*(1.0-l1_weight) + (epoch_gen_l1_loss / data_loader_len)*l1_weight
     ))
 
-    print("  Discriminator: loss = {:.4f}".format(
+    print('  Discriminator: loss = {:.4f}'.format(
         (epoch_disc_real_loss + epoch_disc_fake_loss) / (data_loader_len*2)
     ))
 
-    print("                 acc. = {:.4f} (real acc. = {:.4f}, fake acc. = {:.4f})".format(
+    print('                 acc. = {:.4f} (real acc. = {:.4f}, fake acc. = {:.4f})'.format(
         (epoch_disc_real_acc + epoch_disc_fake_acc) / (data_loader_len*2),
         epoch_disc_real_acc / data_loader_len,
         epoch_disc_fake_acc / data_loader_len
@@ -53,7 +53,7 @@ def save_sample(real_imgs_lab, fake_imgs_lab, save_path, plot_size=20, scale=2.2
     
     if show:
         cv2.destroyAllWindows()
-        cv2.imshow("sample", canvas)
+        cv2.imshow('sample', canvas)
         cv2.waitKey(10000)
 
 
@@ -92,16 +92,16 @@ def save_test_sample(real_imgs_lab, fake_imgs_lab1, fake_imgs_lab2, save_path, p
     
     if show:
         cv2.destroyAllWindows()
-        cv2.imshow("sample", canvas)
+        cv2.imshow('sample', canvas)
         cv2.waitKey(10000)
 
 
 def print_args(args):
     """Display args."""
-    arg_list = str(args)[10:-1].split(",")
+    arg_list = str(args)[10:-1].split(',')
     for arg in arg_list:
         print(arg.strip())
-    print("")
+    print('')
 
 
 def adjust_learning_rate(optimizer, global_step, base_lr, lr_decay_rate=0.1, lr_decay_steps=6e4):
@@ -111,4 +111,4 @@ def adjust_learning_rate(optimizer, global_step, base_lr, lr_decay_rate=0.1, lr_
         lr = 1e-6
     
     for param_group in optimizer.param_groups:
-        param_group["lr"] = lr
+        param_group['lr'] = lr

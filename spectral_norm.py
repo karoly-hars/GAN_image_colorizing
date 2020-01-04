@@ -8,7 +8,7 @@ def l2normalize(v, eps=1e-12):
 
 
 class SpectralNorm(nn.Module):
-    def __init__(self, module, name="weight", power_iterations=1):
+    def __init__(self, module, name='weight', power_iterations=1):
         super(SpectralNorm, self).__init__()
         self.module = module
         self.name = name
@@ -17,9 +17,9 @@ class SpectralNorm(nn.Module):
             self._make_params()
 
     def _update_u_v(self):
-        u = getattr(self.module, self.name + "_u")
-        v = getattr(self.module, self.name + "_v")
-        w = getattr(self.module, self.name + "_bar")
+        u = getattr(self.module, self.name + '_u')
+        v = getattr(self.module, self.name + '_v')
+        w = getattr(self.module, self.name + '_bar')
 
         height = w.data.shape[0]
         for _ in range(self.power_iterations):
@@ -32,9 +32,9 @@ class SpectralNorm(nn.Module):
 
     def _made_params(self):
         try:
-            u = getattr(self.module, self.name + "_u")
-            v = getattr(self.module, self.name + "_v")
-            w = getattr(self.module, self.name + "_bar")
+            u = getattr(self.module, self.name + '_u')
+            v = getattr(self.module, self.name + '_v')
+            w = getattr(self.module, self.name + '_bar')
             return True
         except AttributeError:
             return False
@@ -53,9 +53,9 @@ class SpectralNorm(nn.Module):
 
         del self.module._parameters[self.name]
 
-        self.module.register_parameter(self.name + "_u", u)
-        self.module.register_parameter(self.name + "_v", v)
-        self.module.register_parameter(self.name + "_bar", w_bar)
+        self.module.register_parameter(self.name + '_u', u)
+        self.module.register_parameter(self.name + '_v', v)
+        self.module.register_parameter(self.name + '_bar', w_bar)
 
     def forward(self, *args):
         self._update_u_v()

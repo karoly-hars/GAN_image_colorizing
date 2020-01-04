@@ -7,9 +7,9 @@ from spectral_norm import SpectralNorm
 def weights_init_normal(m):
     """Initialize the weights of a module with Gaussian distribution."""
     classname = m.__class__.__name__
-    if classname.find("Conv2d") != -1 or classname.find("ConvTranspose2d") != -1:
+    if classname.find('Conv2d') != -1 or classname.find('ConvTranspose2d') != -1:
         torch.nn.init.normal_(m.weight.data, 0.0, 0.02)
-    elif classname.find("BatchNorm2d") != -1:
+    elif classname.find('BatchNorm2d') != -1:
         torch.nn.init.normal_(m.weight.data, 1.0, 0.02)
         torch.nn.init.constant_(m.bias.data, 0.0)
 
@@ -20,13 +20,13 @@ class ConvBlock(nn.Module):
         super(ConvBlock, self).__init__()
         model = [nn.Conv2d(in_size, out_size, kernel_size=kernel_size, stride=stride, padding=padding)]
 
-        if normalize == "batch":
+        if normalize == 'batch':
             # + batchnorm
             model.append(nn.BatchNorm2d(out_size))
-        elif normalize == "instance":
+        elif normalize == 'instance':
             # + instancenorm
             model.append(nn.InstanceNorm2d(out_size))
-        elif normalize == "spectral":
+        elif normalize == 'spectral':
             # conv + spectralnorm
             model = [
                 SpectralNorm(nn.Conv2d(in_size, out_size, kernel_size=kernel_size, stride=stride, padding=padding))
@@ -50,10 +50,10 @@ class TransConvBlock(nn.Module):
         super(TransConvBlock, self).__init__()
         model = [nn.ConvTranspose2d(in_size, out_size, kernel_size=kernel_size, stride=stride, padding=padding)]
 
-        if normalize == "batch":
+        if normalize == 'batch':
             # add batch norm
             model.append(nn.BatchNorm2d(out_size))
-        elif normalize == "instance":
+        elif normalize == 'instance':
             # add instance norm
             model.append(nn.InstanceNorm2d(out_size))
             
