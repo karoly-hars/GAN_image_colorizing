@@ -92,7 +92,7 @@ class Generator(nn.Module):
         )
         
     def forward(self, x):
-        x = F.upsample(x, size=(35, 35), mode="bilinear")
+        x = F.interpolate(x, size=(35, 35), mode='bilinear', align_corners=True)
         d1 = self.down1(x)
         d2 = self.down2(d1)
         d3 = self.down3(d2)
@@ -124,7 +124,7 @@ class Discriminator(nn.Module):
         )
         
     def forward(self, x):
-        x = F.upsample(x, size=(35, 35), mode="bilinear") 
+        x = F.interpolate(x, size=(35, 35), mode='bilinear', align_corners=True)
         d1 = self.down1(x)
         d2 = self.down2(d1)
         d3 = self.down3(d2)

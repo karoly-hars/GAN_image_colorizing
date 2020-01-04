@@ -2,11 +2,9 @@ import os
 import argparse
 import torch
 from torch.utils.data import DataLoader
-import warnings
 from datasets import Cifar10Dataset
 from networks import Generator
 from helpers import save_test_sample, print_args
-warnings.simplefilter("ignore")  # sorry. warnings annoy me
 
 
 def run_test(args):

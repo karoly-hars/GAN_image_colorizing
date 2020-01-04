@@ -3,12 +3,10 @@ import argparse
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
-import warnings
 from datasets import Cifar10Dataset
 from networks import Generator, Discriminator, weights_init_normal
 from helpers import print_args, print_losses, ones_target, zeros_target
 from helpers import save_sample, adjust_learning_rate
-warnings.simplefilter("ignore")  # sorry. warnings annoy me
 
 
 def run_training(args):
