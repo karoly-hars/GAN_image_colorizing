@@ -31,7 +31,6 @@ def init_training(args):
 
     # initialize weights
     if args.apply_weight_init:
-        print("ITS ASD")
         generator.apply(weights_init_normal)
         discriminator.apply(weights_init_normal)
 
