@@ -9,67 +9,67 @@ from helpers import print_args, print_losses
 from helpers import save_sample, adjust_learning_rate
 
 
-def run_training(args):
+def init_training(args):
+    """Initalize the data loader, the networks, the optimizers and the loss functions."""
     datasets = Cifar10Dataset.get_datasets_from_scratch(args.data_path)
     for phase in ["train", "test"]:
         print("{} dataset len: {}".format(phase, len(datasets[phase])))
 
     # define loaders
-    data_loaders = dict()
-    data_loaders["train"] = DataLoader(datasets["train"], batch_size=args.batch_size,
-                                       shuffle=True, num_workers=args.num_workers)
-    data_loaders["test"] = DataLoader(datasets["test"], batch_size=args.batch_size,
-                                      shuffle=False, num_workers=args.num_workers)
+    data_loaders = {
+        "train": DataLoader(datasets["train"], batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers),
+        "test": DataLoader(datasets["test"], batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers)
+    }
 
-    # set up models 
-    global_step = 0
-    use_gpu = torch.cuda.is_available()
-    print("use_gpu={}".format(use_gpu))
+    # check CUDA availability and set device
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    print('Use GPU: {}'.format(str(device) != 'cpu'))
 
-    generator = Generator(args.gen_norm)
-    discriminator = Discriminator(args.disc_norm)
-    if use_gpu:
-        generator.cuda()
-        discriminator.cuda()
+    # set up models
+    generator = Generator(args.gen_norm).to(device)
+    discriminator = Discriminator(args.disc_norm).to(device)
 
-    # Initialize weights
-    if args.apply_weight_init == 1:
+    # initialize weights
+    if args.apply_weight_init:
         generator.apply(weights_init_normal)
         discriminator.apply(weights_init_normal)
 
     # optimizer adam with reduced momentum
-    g_optimizer = torch.optim.Adam(generator.parameters(), lr=args.base_lr_gen, betas=(0.5, 0.999))
-    d_optimizer = torch.optim.Adam(discriminator.parameters(), lr=args.base_lr_disc, betas=(0.5, 0.999))
+    optimizers = {
+        "gen": torch.optim.Adam(generator.parameters(), lr=args.base_lr_gen, betas=(0.5, 0.999)),
+        "disc": torch.optim.Adam(discriminator.parameters(), lr=args.base_lr_disc, betas=(0.5, 0.999))
+    }
 
     # losses
-    l1_loss_fn = torch.nn.L1Loss(reduction="mean")
-    discriminator_loss_fn = torch.nn.BCELoss(reduction="mean")
+    losses = {
+        "l1": torch.nn.L1Loss(reduction="mean"),
+        'disc': torch.nn.BCELoss(reduction="mean")
+    }
 
     # make save dir, if needed
     if not os.path.exists(args.save_path):
         os.makedirs(args.save_path)
 
-    # load weight if the training is not starting from the beginning
+    # load weights if the training is not starting from the beginning
+    global_step = args.start_epoch * len(data_loaders["train"]) if args.start_epoch > 0 else 0
     if args.start_epoch > 0:
-        global_step = args.start_epoch * len(data_loaders["train"])
-        if use_gpu:
-            generator.load_state_dict(
-                torch.load(os.path.join(args.save_path, "checkpoint_ep{}_gen.pt".format(args.start_epoch - 1)))
-            )
-            discriminator.load_state_dict(
-                torch.load(os.path.join(args.save_path, "checkpoint_ep{}_disc.pt".format(args.start_epoch - 1)))
-            )
-        else:
-            generator.load_state_dict(
-                torch.load(os.path.join(args.save_path, "checkpoint_ep{}_gen.pt".format(args.start_epoch - 1)),
-                           map_location="cpu")
-            )
-            discriminator.load_state_dict(
-                torch.load(os.path.join(args.save_path, "checkpoint_ep{}_disc.pt".format(args.start_epoch - 1)),
-                           map_location="cpu")
-            )
 
-    #  begin training    
+        generator.load_state_dict(torch.load(
+            os.path.join(args.save_path, "checkpoint_ep{}_gen.pt".format(args.start_epoch - 1)),
+            map_location=device
+        ))
+        discriminator.load_state_dict(torch.load(
+            os.path.join(args.save_path, "checkpoint_ep{}_disc.pt".format(args.start_epoch - 1)),
+            map_location=device
+        ))
+
+    return global_step, device, data_loaders, generator, discriminator, optimizers, losses
+
+
+def run_training(args):
+    """Initialize and run the training process."""
+    global_step, device, data_loaders, generator, discriminator, optimizers, losses = init_training(args)
+    #  run training process
     for epoch in range(args.start_epoch, args.max_epoch):
         print("\n========== EPOCH {} ==========".format(epoch))
 
@@ -93,65 +93,58 @@ def run_training(args):
             for idx, sample in enumerate(data_loaders[phase]):
 
                 # get data
-                img_l, real_img_lab = sample[:, 0:1, :, :], sample
-                img_l, real_img_lab = img_l.float(), real_img_lab.float()
-                if use_gpu:
-                    img_l, real_img_lab = img_l.cuda(), real_img_lab.cuda()
+                img_l, real_img_lab = sample[:, 0:1, :, :].float().to(device), sample.float().to(device)
 
                 # generate targets
-                target_ones = torch.ones(real_img_lab.size(0), 1)
-                target_zeros = torch.zeros(real_img_lab.size(0), 1)
-                if use_gpu:
-                    target_ones, target_zeros = target_ones.cuda(), target_zeros.cuda()
+                target_ones = torch.ones(real_img_lab.size(0), 1).to(device)
+                target_zeros = torch.zeros(real_img_lab.size(0), 1).to(device)
 
                 if phase == "train":
                     # adjust LR
                     global_step += 1
-                    adjust_learning_rate(g_optimizer, global_step, base_lr=args.base_lr_gen,
+                    adjust_learning_rate(optimizers["gen"], global_step, base_lr=args.base_lr_gen,
                                          lr_decay_rate=args.lr_decay_rate, lr_decay_steps=args.lr_decay_steps)
-                    adjust_learning_rate(d_optimizer, global_step, base_lr=args.base_lr_disc,
+                    adjust_learning_rate(optimizers["disc"], global_step, base_lr=args.base_lr_disc,
                                          lr_decay_rate=args.lr_decay_rate, lr_decay_steps=args.lr_decay_steps)
 
                     # reset generator gradients
-                    g_optimizer.zero_grad()
+                    optimizers["gen"].zero_grad()
 
                 # train / inference the generator
                 with torch.set_grad_enabled(phase == "train"):
                     fake_img_ab = generator(img_l)
-                    fake_img_lab = torch.cat([img_l, fake_img_ab], dim=1)
-                    if use_gpu:
-                        fake_img_lab = fake_img_lab.cuda()
+                    fake_img_lab = torch.cat([img_l, fake_img_ab], dim=1).to(device)
 
                     # adv loss
-                    adv_loss = discriminator_loss_fn(discriminator(fake_img_lab), target_ones)
+                    adv_loss = losses["disc"](discriminator(fake_img_lab), target_ones)
                     # l1 loss
-                    l1_loss = l1_loss_fn(real_img_lab[:, 1:, :, :], fake_img_ab)
+                    l1_loss = losses["l1"](real_img_lab[:, 1:, :, :], fake_img_ab)
                     # full gen loss
                     full_gen_loss = (1.0 - args.l1_weight) * adv_loss + (args.l1_weight * l1_loss)
 
                     if phase == "train":
                         full_gen_loss.backward()
-                        g_optimizer.step()
+                        optimizers["gen"].step()
 
                 epoch_gen_adv_loss += adv_loss.item()
                 epoch_gen_l1_loss += l1_loss.item()
 
                 if phase == "train":
                     # reset discriminator gradients
-                    d_optimizer.zero_grad()
+                    optimizers["disc"].zero_grad()
 
                 # train / inference the discriminator
                 with torch.set_grad_enabled(phase == "train"):
                     prediction_real = discriminator(real_img_lab)
                     prediction_fake = discriminator(fake_img_lab.detach())
 
-                    loss_real = discriminator_loss_fn(prediction_real, target_ones * args.smoothing)
-                    loss_fake = discriminator_loss_fn(prediction_fake, target_zeros)
+                    loss_real = losses["disc"](prediction_real, target_ones * args.smoothing)
+                    loss_fake = losses["disc"](prediction_fake, target_zeros)
                     full_disc_loss = loss_real + loss_fake
 
                     if phase == "train":
                         full_disc_loss.backward()
-                        d_optimizer.step()
+                        optimizers["disc"].step()
 
                 epoch_disc_real_loss += loss_real.item()
                 epoch_disc_fake_loss += loss_fake.item()
@@ -172,16 +165,18 @@ def run_training(args):
             # save after every nth epoch
             if phase == "test":
                 if epoch % args.save_freq == 0 or epoch == args.max_epoch - 1:
-                    torch.save(generator.state_dict(),
-                               os.path.join(args.save_path, "checkpoint_ep{}_gen.pt".format(epoch)))
-                    torch.save(discriminator.state_dict(),
-                               os.path.join(args.save_path, "checkpoint_ep{}_disc.pt".format(epoch)))
+                    gen_path = os.path.join(args.save_path, "checkpoint_ep{}_gen.pt".format(epoch))
+                    disc_path = os.path.join(args.save_path, "checkpoint_ep{}_disc.pt".format(epoch))
+                    torch.save(generator.state_dict(), gen_path)
+                    torch.save(discriminator.state_dict(), disc_path)
                     print("Checkpoint.")
 
                 # display sample images
-                save_sample(sample_real_img_lab,
-                            sample_fake_img_lab,
-                            os.path.join(args.save_path, "sample_ep{}.png".format(epoch)))
+                save_sample(
+                    sample_real_img_lab,
+                    sample_fake_img_lab,
+                    os.path.join(args.save_path, "sample_ep{}.png".format(epoch))
+                )
 
 
 def get_arguments():

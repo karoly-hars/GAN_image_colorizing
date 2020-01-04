@@ -7,51 +7,50 @@ from networks import Generator
 from helpers import save_test_sample, print_args
 
 
-def run_test(args):
-
+def init_test(args):
+    """Create the data loader, and the generators for testing purposes."""
+    # create loader
     dataset = Cifar10Dataset.get_datasets_from_scratch(args.data_path)["test"]
-    print("test dataset len: {}".format(len(dataset)))
-
-    # define dataloader    
+    print("Test dataset len: {}".format(len(dataset)))
     data_loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers)
 
-    # set up model
-    use_gpu = torch.cuda.is_available()
-    print("use_gpu={}".format(use_gpu))
+    # check CUDA availability and set device
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    print('Use GPU: {}'.format(str(device) != 'cpu'))
 
     # download the weights for the generators
     if not os.path.exists("batchnorm_ep200_weigths_gen.pt"):
         print("Downloading model weights for generator with BN...")
         os.system("wget https://www.dropbox.com/s/r33ndl969q83gik/batchnorm_ep200_weigths_gen.pt")
-    generator_bn = Generator("batch")
 
     if not os.path.exists("spectralnorm_ep100_weights_gen.pt"):
         print("Downloading model weights for generator with SN...")
         os.system("wget https://www.dropbox.com/s/tccxduyqp3dj5dg/spectralnorm_ep100_weights_gen.pt")
-    generator_sn = Generator("batch")
 
-    if use_gpu:
-        generator_bn.cuda()
-        generator_sn.cuda()
+    # load generator that was trained with batch norm
+    generator_bn = Generator(normalization_type="batch").to(device)
+    # load generator that was trained with spectral norm
+    generator_sn = Generator(normalization_type="batch").to(device)
 
     # load the weights
-    if use_gpu:
-        generator_bn.load_state_dict(torch.load("batchnorm_ep200_weigths_gen.pt"))
-        generator_sn.load_state_dict(torch.load("spectralnorm_ep100_weights_gen.pt"))
-    else:
-        generator_bn.load_state_dict(torch.load("batchnorm_ep200_weigths_gen.pt", map_location="cpu"))
-        generator_sn.load_state_dict(torch.load("spectralnorm_ep100_weights_gen.pt", map_location="cpu"))
+    generator_bn.load_state_dict(torch.load("batchnorm_ep200_weigths_gen.pt", map_location=device))
+    generator_sn.load_state_dict(torch.load("spectralnorm_ep100_weights_gen.pt", map_location=device))
 
     # make save dir, if needed
     if not os.path.exists(args.save_path):
         os.makedirs(args.save_path)
 
+    return device, data_loader, generator_bn, generator_sn
+
+
+def run_test(args):
+    """Run the networks on the test set, and save/show the samples."""
+    device, data_loader, generator_bn, generator_sn = init_test(args)
+
     # run through the dataset and display the first few images of every batch
     for idx, sample in enumerate(data_loader):
 
-        img_l, real_img_lab = sample[:, 0:1, :, :], sample
-        if use_gpu:
-            img_l, real_img_lab = img_l.cuda(), real_img_lab.cuda()
+        img_l, real_img_lab = sample[:, 0:1, :, :].to(device), sample.to(device)
 
         # generate images with bn model
         fake_img_ab_bn = generator_bn(img_l).detach()
