@@ -1,36 +1,31 @@
 import os
-import torch
 import cv2
 import numpy as np
 from datasets import postprocess
 
 
-def ones_target(size):
-    data = torch.ones(size, 1)
-    return data
-
-
-def zeros_target(size):
-    data = torch.zeros(size, 1)
-    return data
-
-  
 def print_losses(epoch_gen_adv_loss, epoch_gen_l1_loss, epoch_disc_real_loss, epoch_disc_fake_loss,
                  epoch_disc_real_acc, epoch_disc_fake_acc, data_loader_len, l1_weight): 
-  
-    print("  Generator: adversarial loss = {:.4f}, L1 loss = {:.4f}, full loss = {:.4f}".
-          format(epoch_gen_adv_loss / data_loader_len, epoch_gen_l1_loss / data_loader_len,
-                 (epoch_gen_adv_loss / data_loader_len)*(1.0-l1_weight) +
-                 (epoch_gen_l1_loss / data_loader_len)*l1_weight))
-    print("  Discriminator: loss = {:.4f}".
-          format((epoch_disc_real_loss + epoch_disc_fake_loss) / (data_loader_len*2)))
-    print("                 acc. = {:.4f} (real acc. = {:.4f}, fake acc. = {:.4f})".
-          format((epoch_disc_real_acc + epoch_disc_fake_acc) / (data_loader_len*2),
-                 epoch_disc_real_acc / data_loader_len,
-                 epoch_disc_fake_acc / data_loader_len))
+    """Create a display all the losses and accuracies."""
+    print("  Generator: adversarial loss = {:.4f}, L1 loss = {:.4f}, full loss = {:.4f}".format(
+        epoch_gen_adv_loss / data_loader_len,
+        epoch_gen_l1_loss / data_loader_len,
+        (epoch_gen_adv_loss / data_loader_len)*(1.0-l1_weight) + (epoch_gen_l1_loss / data_loader_len)*l1_weight
+    ))
+
+    print("  Discriminator: loss = {:.4f}".format(
+        (epoch_disc_real_loss + epoch_disc_fake_loss) / (data_loader_len*2)
+    ))
+
+    print("                 acc. = {:.4f} (real acc. = {:.4f}, fake acc. = {:.4f})".format(
+        (epoch_disc_real_acc + epoch_disc_fake_acc) / (data_loader_len*2),
+        epoch_disc_real_acc / data_loader_len,
+        epoch_disc_fake_acc / data_loader_len
+    ))
 
 
 def save_sample(real_imgs_lab, fake_imgs_lab, save_path, plot_size=20, scale=2.2, show=False):
+    """Create a grid of ground truth, grayscale and colorized images and save + display it to the user."""
     batch_size = real_imgs_lab.size()[0]
     plot_size = min(plot_size, batch_size)
 
@@ -63,6 +58,10 @@ def save_sample(real_imgs_lab, fake_imgs_lab, save_path, plot_size=20, scale=2.2
 
 
 def save_test_sample(real_imgs_lab, fake_imgs_lab1, fake_imgs_lab2, save_path, plot_size=14, scale=1.6, show=False):
+    """
+    Create a grid of ground truth,
+    grayscale and 2 colorized images (from different sources) and save + display it to the user.
+    """
     batch_size = real_imgs_lab.size()[0]
     plot_size = min(plot_size, batch_size)
 
@@ -74,7 +73,7 @@ def save_test_sample(real_imgs_lab, fake_imgs_lab1, fake_imgs_lab2, save_path, p
     fake_imgs_lab2 = fake_imgs_lab2.cpu().numpy()
     
     for i in range(0, plot_size):
-        # postprocess real and fake samples
+        # post-process real and fake samples
         real_bgr = postprocess(real_imgs_lab[i])
         fake_bgr1 = postprocess(fake_imgs_lab1[i])  
         fake_bgr2 = postprocess(fake_imgs_lab2[i])     
@@ -95,9 +94,10 @@ def save_test_sample(real_imgs_lab, fake_imgs_lab1, fake_imgs_lab2, save_path, p
         cv2.destroyAllWindows()
         cv2.imshow("sample", canvas)
         cv2.waitKey(10000)
-        
-        
+
+
 def print_args(args):
+    """Display args."""
     arg_list = str(args)[10:-1].split(",")
     for arg in arg_list:
         print(arg.strip())
@@ -105,6 +105,7 @@ def print_args(args):
 
 
 def adjust_learning_rate(optimizer, global_step, base_lr, lr_decay_rate=0.1, lr_decay_steps=6e4):
+    """Adjust the learning rate of the params of an optimizer."""
     lr = base_lr * (lr_decay_rate ** (global_step/lr_decay_steps))
     if lr < 1e-6:
         lr = 1e-6

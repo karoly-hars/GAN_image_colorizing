@@ -5,7 +5,7 @@ import torch
 from torch.utils.data import DataLoader
 from datasets import Cifar10Dataset
 from networks import Generator, Discriminator, weights_init_normal
-from helpers import print_args, print_losses, ones_target, zeros_target
+from helpers import print_args, print_losses
 from helpers import save_sample, adjust_learning_rate
 
 
@@ -99,8 +99,8 @@ def run_training(args):
                     img_l, real_img_lab = img_l.cuda(), real_img_lab.cuda()
 
                 # generate targets
-                target_ones = ones_target(real_img_lab.size(0))
-                target_zeros = zeros_target(real_img_lab.size(0))
+                target_ones = torch.ones(real_img_lab.size(0), 1)
+                target_zeros = torch.zeros(real_img_lab.size(0), 1)
                 if use_gpu:
                     target_ones, target_zeros = target_ones.cuda(), target_zeros.cuda()
 
@@ -207,7 +207,7 @@ def get_arguments():
                         help="Defines the type of normalization used in the generator")
     parser.add_argument("--disc_norm", type=str, default="batch", choices=["batch", "instance", "spectral"],
                         help="Defines the type of normalization used in the discriminator")
-    parser.add_argument("--apply_weight_init", type=int, default=1, choices=[0, 1],
+    parser.add_argument("--apply_weight_init", type=bool, default=True,
                         help="If set to 1, applies the 'weights_init_normal' function from networks.py")
     return parser.parse_args()
 
