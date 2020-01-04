@@ -31,6 +31,7 @@ def init_training(args):
 
     # initialize weights
     if args.apply_weight_init:
+        print("ITS ASD")
         generator.apply(weights_init_normal)
         discriminator.apply(weights_init_normal)
 
@@ -181,7 +182,10 @@ def run_training(args):
 
 def get_arguments():
     """Get command line arguments."""
-    parser = argparse.ArgumentParser(description="Image colorization with GANs")
+    parser = argparse.ArgumentParser(
+        description="Image colorization with GANs",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
     parser.add_argument("--data_path", type=str, default="./data",
                         help="Download and extraction path for the dataset")
     parser.add_argument("--save_path", type=str, default="./checkpoints",
@@ -202,7 +206,7 @@ def get_arguments():
                         help="Defines the type of normalization used in the generator")
     parser.add_argument("--disc_norm", type=str, default="batch", choices=["batch", "instance", "spectral"],
                         help="Defines the type of normalization used in the discriminator")
-    parser.add_argument("--apply_weight_init", type=bool, default=True,
+    parser.add_argument("--apply_weight_init", type=int, default=0, choices=[0, 1],
                         help="If set to 1, applies the 'weights_init_normal' function from networks.py")
     return parser.parse_args()
 
