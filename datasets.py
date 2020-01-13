@@ -23,10 +23,10 @@ def preprocess(img_bgr):
     img_lab[:, :, 2] = img_lab[:, :, 2]/127
     # transpose
     img_lab = img_lab.transpose((2, 0, 1))
-    return img_lab  
+    return img_lab
 
 
-def postprocess(img_lab):    
+def postprocess(img_lab):
     # transpose back
     img_lab = img_lab.transpose((1, 2, 0))
     # transform back
@@ -38,8 +38,8 @@ def postprocess(img_lab):
     # to int8
     img_bgr = (img_bgr*255.0).astype(np.uint8)
     return img_bgr
-    
-    
+
+
 class Cifar10Dataset(Dataset):
     def __init__(self, root_dir, mirror=False, random_seed=None):
         self.img_paths = [os.path.join(root_dir, f) for f in os.listdir(root_dir)]
@@ -54,12 +54,12 @@ class Cifar10Dataset(Dataset):
     def __getitem__(self, idx):
         img_path = self.img_paths[idx]
         img_bgr = cv2.imread(img_path)
-            
+
         if self.mirror:
             if random.random() > 0.5:
                 img_bgr = img_bgr[:, ::-1, :]
-          
-        img_lab = preprocess(img_bgr) 
+
+        img_lab = preprocess(img_bgr)
         return img_lab
 
     @classmethod
