@@ -8,7 +8,7 @@ from helpers import save_test_sample, print_args
 
 
 def init_test(args):
-    """Create the data loader, and the generators for testing purposes."""
+    """Create the data loader and the generators for testing purposes."""
     # create loader
     dataset = Cifar10Dataset.get_datasets_from_scratch(args.data_path)['test']
     print('Test dataset len: {}'.format(len(dataset)))
@@ -67,9 +67,9 @@ def run_test(args):
 
 def get_arguments():
     """Get command line arguments."""
-    parser = argparse.ArgumentParser(description='Image colorization with GANs')
-    parser.add_argument('--data_path', type=str, default='./data', help='Download and extraction path for the dataset')
-    parser.add_argument('--save_path', type=str, default='./output_imgs', help='Save path for the test imgs')
+    parser = argparse.ArgumentParser(description='Image colorization with GANs.')
+    parser.add_argument('--data_path', type=str, default='./data', help='Download and extraction path for the dataset.')
+    parser.add_argument('--save_path', type=str, default='./output_imgs', help='Save path for the test imgs.')
     parser.add_argument('--batch_size', type=int, default=32)
     parser.add_argument('--num_workers', type=int, default=4)
 
