@@ -10,7 +10,7 @@ from helpers import save_sample, adjust_learning_rate
 
 
 def init_training(args):
-    """Initalize the data loader, the networks, the optimizers and the loss functions."""
+    """Initialize the data loader, the networks, the optimizers and the loss functions."""
     datasets = Cifar10Dataset.get_datasets_from_scratch(args.data_path)
     for phase in ['train', 'test']:
         print('{} dataset len: {}'.format(phase, len(datasets[phase])))
@@ -34,7 +34,7 @@ def init_training(args):
         generator.apply(weights_init_normal)
         discriminator.apply(weights_init_normal)
 
-    # optimizer adam with reduced momentum
+    # adam optimizer with reduced momentum
     optimizers = {
         'gen': torch.optim.Adam(generator.parameters(), lr=args.base_lr_gen, betas=(0.5, 0.999)),
         'disc': torch.optim.Adam(discriminator.parameters(), lr=args.base_lr_disc, betas=(0.5, 0.999))
@@ -46,7 +46,7 @@ def init_training(args):
         'disc': torch.nn.BCELoss(reduction='mean')
     }
 
-    # make save dir, if needed
+    # make save dir, if it does not exists
     if not os.path.exists(args.save_path):
         os.makedirs(args.save_path)
 
@@ -186,27 +186,27 @@ def get_arguments():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument('--data_path', type=str, default='./data',
-                        help='Download and extraction path for the dataset')
+                        help='Download and extraction path for the dataset.')
     parser.add_argument('--save_path', type=str, default='./checkpoints',
-                        help='Save and load path for the network weights')
+                        help='Save and load path for the network weights.')
     parser.add_argument('--save_freq', type=int, default=5, help='Save frequency during training.')
     parser.add_argument('--batch_size', type=int, default=32)
     parser.add_argument('--num_workers', type=int, default=4)
     parser.add_argument('--start_epoch', type=int, default=0,
-                        help='If start_epoch>0, attempts to a load previously saved weigth from the save_path')
+                        help='If start_epoch>0, attempts to a load previously saved weigth from the save_path.')
     parser.add_argument('--max_epoch', type=int, default=200)
     parser.add_argument('--smoothing', type=float, default=0.9)
     parser.add_argument('--l1_weight', type=float, default=0.99)
-    parser.add_argument('--base_lr_gen', type=float, default=3e-4, help='Base learning rate for the generator')
-    parser.add_argument('--base_lr_disc', type=float, default=6e-5, help='Base learning rate for the discriminator')
-    parser.add_argument('--lr_decay_rate', type=float, default=0.1, help='Learning rate decay rate for both networks')
-    parser.add_argument('--lr_decay_steps', type=float, default=6e4, help='Learning rate decay steps for both networks')
+    parser.add_argument('--base_lr_gen', type=float, default=3e-4, help='Base learning rate for the generator.')
+    parser.add_argument('--base_lr_disc', type=float, default=6e-5, help='Base learning rate for the discriminator.')
+    parser.add_argument('--lr_decay_rate', type=float, default=0.1, help='Learning rate decay rate for both networks.')
+    parser.add_argument('--lr_decay_steps', type=float, default=6e4, help='Learning rate decay steps for both networks.')
     parser.add_argument('--gen_norm', type=str, default='batch', choices=['batch', 'instance'],
-                        help='Defines the type of normalization used in the generator')
+                        help='Defines the type of normalization used in the generator.')
     parser.add_argument('--disc_norm', type=str, default='batch', choices=['batch', 'instance', 'spectral'],
-                        help='Defines the type of normalization used in the discriminator')
+                        help='Defines the type of normalization used in the discriminator.')
     parser.add_argument('--apply_weight_init', type=int, default=0, choices=[0, 1],
-                        help='If set to 1, applies the "weights_init_normal" function from networks.py')
+                        help='If set to 1, applies the "weights_init_normal" function from networks.py.')
     return parser.parse_args()
 
 
