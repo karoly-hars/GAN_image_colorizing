@@ -193,7 +193,7 @@ def get_arguments():
     parser.add_argument('--batch_size', type=int, default=32)
     parser.add_argument('--num_workers', type=int, default=4)
     parser.add_argument('--start_epoch', type=int, default=0,
-                        help='If start_epoch>0, attempts to a load previously saved weigth from the save_path.')
+                        help='If start_epoch>0, load previously saved weigth from the save_path.')
     parser.add_argument('--max_epoch', type=int, default=200)
     parser.add_argument('--smoothing', type=float, default=0.9)
     parser.add_argument('--l1_weight', type=float, default=0.99)
